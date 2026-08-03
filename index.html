@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Academic Course Scheduler & Optimizer</title>
+    <style>
+        :root {
+            --primary: #0a2240;
+            --primary-light: #163866;
+            --accent: #f26a21;
+            --accent-hover: #d65813;
+            --bg: #f4f6f9;
+            --card-bg: #ffffff;
+            --border: #e1e5eb;
+            --text: #2c3e50;
+            --text-muted: #7f8c8d;
+            --success: #27ae60;
+            --warning: #f39c12;
+            --danger: #c0392b;
+        }
+
+        * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        body { margin: 0; padding: 0; background-color: var(--bg); color: var(--text); }
+
+        /* HEADER */
+        header { background-color: var(--primary); color: white; padding: 20px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.15); }
+        header h1 { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: 0.5px; }
+        header p { margin: 4px 0 0 0; font-size: 13px; opacity: 0.8; }
+        .header-actions { display: flex; gap: 10px; }
+
+        /* CONTAINER & NAVIGATION */
+        .main-container { max-width: 1300px; margin: 25px auto; padding: 0 20px; }
+        .nav-tabs { display: flex; background: white; border-radius: 8px; padding: 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 20px; border: 1px solid var(--border); }
+        .tab-btn { flex: 1; padding: 12px; border: none; background: transparent; font-size: 14px; font-weight: 600; color: var(--text-muted); cursor: pointer; border-radius: 6px; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .tab-btn.active { background-color: var(--primary); color: white; }
+        .tab-btn .badge { background: rgba(0,0,0,0.15); padding: 2px 8px; border-radius: 12px; font-size: 11px; }
+        .tab-btn.active .badge { background: var(--accent); color: white; }
+
+        /* TAB PANELS */
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* CARDS & LAYOUT */
+        .grid-2 { display: grid; grid-template-columns: 350px 1fr; gap: 20px; }
+        @media (max-width: 900px) { .grid-2 { grid-template-columns: 1fr; } }
+        
+        .card { background: var(--card-bg); border-radius: 8px; border: 1px solid var(--border); padding: 20px; box-shadow: 0 2px 6px rgba(0,0,0,0.03); margin-bottom: 20px; }
+        .card h2 { margin-top: 0; font-size: 16px; color: var(--primary); border-bottom: 2px solid var(--accent); padding-bottom: 8px; margin-bottom: 15px; }
+
+        /* FORMS & INPUTS */
+        .form-group { margin-bottom: 12px; }
+        label { display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 4px; }
+        input, select { width: 100%; padding: 9px 11px; border: 1px solid var(--border); border-radius: 5px; font-size: 13px; background: white; }
+        input:focus, select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px rgba(242,106,33,0.15); }
+        
+        /* BUTTONS */
+        .btn { padding: 9px 16px; border: none; border-radius: 5px; font-weight: 600; font-size: 13px; cursor: pointer; transition: background 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+        .btn-primary { background: var(--accent); color: white; }
+        .btn-primary:hover { background: var(--accent-hover); }
+        .btn-secondary { background: var(--primary); color: white; }
+        .btn-secondary:hover { background: var(--primary-light); }
+        .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+        .btn-outline:hover { background: #f0f3f7; }
+        .btn-danger { background: #e74c3c; color: white; padding: 4px 8px; font-size: 11px; }
+        .btn-danger:hover { background: #c0392b; }
+        .btn-block { width: 100%; }
+
+        /* TABLES */
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th { background: #f8fafc; text-align: left; padding: 10px; border-bottom: 2px solid var(--border); font-size: 11px; text-transform: uppercase; color: var(--text-muted); }
+        td { padding: 10px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+        tr:hover { background-color: #fcfdfe; }
+
+        /* BADGES & TAGS */
+        .status-badge { display: inline-block; padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: 700; }
+        .badge-ft { background: #e3f2fd; color: #1565c0; }
+        .badge-adjunct { background: #f3e5f5; color: #7b1fa2; }
+        .badge-offramp { background: #fff3e0; color: #e65100; }
+        .badge-ug { background: #e8f5e9; color: #2e7d32; }
+        .badge-grad { background: #fce4ec; color: #c2185b; }
+        .badge-both { background: #ede7f6; color: #512da8; }
+
+        /* CAPACITY BAR */
+        .capacity-tracker { background: #f8fafc; padding: 15px; border-radius: 6px; border: 1px solid var(--border); margin-bottom: 15px; }
+        .capacity-item { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; font-size: 12px; }
+        .progress-bar-bg { width: 120px; height: 8px; background: #e0e0e0; border-radius: 4px; overflow: hidden; display: inline-block; }
+        .progress-bar-fill { height: 100%; background: var(--success); transition: width 0.3s; }
+        .progress-bar-fill.over { background: var(--danger); }
+
+        /* GENERATOR & SCHEDULE OUTPUT */
+        .generator-hero { text-align: center; padding: 25px; background: white; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 20px; }
+        .generator-hero h2 { margin: 0 0 10px 0; color: var(--primary); }
+        .generator-hero p { margin: 0 0 20px 0; color: var(--text-muted); font-size: 14px; }
+        
+        .rules-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 20px; text-align: left; }
+        .rule-card { background: #f8fafc; border: 1px solid var(--border); border-radius: 6px; padding: 12px; }
+        .rule-card label { display: flex; align-items: center; gap: 8px; text-transform: none; font-size: 12px; font-weight: bold; color: var(--text); }
+
+        .schedule-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; margin-top: 15px; }
+        .slot-card { background: white; border: 1px solid var(--border); border-radius: 6px; padding: 12px; border-top: 4px solid var(--primary); }
+        .slot-header { font-weight: bold; font-size: 13px; color: var(--primary); margin-bottom: 8px; display: flex; justify-content: space-between; }
+        .course-chip { background: #f0f4f8; border-left: 3px solid var(--accent); padding: 8px; border-radius: 4px; margin-top: 6px; font-size: 12px; }
+        .course-chip-title { font-weight: bold; color: #000; }
+        .course-chip-prof { color: var(--text-muted); font-size: 11px; margin-top: 2px; }
+
+        .warning-box { background: #fff8e1; border-left: 4px solid var(--warning); padding: 12px; border-radius: 4px; margin-bottom: 15px; font-size: 13px; }
+        .warning-box h4 { margin: 0 0 6px 0; color: #b78103; font-size: 13px; }
+        .warning-box ul { margin: 0; padding-left: 18px; }
+
+        /* PRINT STYLES */
+        @media print {
+            header, .nav-tabs, .no-print { display: none !important; }
+            body { background: white; padding: 0; }
+            .card { border: none; box-shadow: none; padding: 0; }
+            .schedule-grid { grid-template-columns: 1fr 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div>
+        <h1>Academic Course Scheduler & Optimizer</h1>
+        <p>Cybersecurity & Business Programs Planning Tool</p>
+    </div>
+    <div class="header-actions no-print">
+        <button class="btn btn-outline" style="color: white; border-color: rgba(255,255,255,0.3);" onclick="exportJSON()">💾 Save Session</button>
+        <button class="btn btn-outline" style="color: white; border-color: rgba(255,255,255,0.3);" onclick="document.getElementById('importFile').click()">📂 Load Session</button>
+        <input type="file" id="importFile" style="display:none;" onchange="importJSON(event)">
+    </div>
+</header>
+
+<div class="main-container">
+
+    <!-- STEP NAVIGATION TABS -->
+    <div class="nav-tabs no-print">
+        <button class="tab-btn active" onclick="switchTab(1)">
+            <span>1. Faculty Roster</span>
+            <span class="badge" id="badgeFaculty">0</span>
+        </button>
+        <button class="tab-btn" onclick="switchTab(2)">
+            <span>2. Timeslots</span>
+            <span class="badge" id="badgeTimeslots">0</span>
+        </button>
+        <button class="tab-btn" onclick="switchTab(3)">
+            <span>3. Courses & Assignments</span>
+            <span class="badge" id="badgeCourses">0</span>
+        </button>
+        <button class="tab-btn" onclick="switchTab(4)">
+            <span>4. Generate & View Schedule</span>
+        </button>
+    </div>
+
+    <!-- TAB 1: FACULTY ROSTER -->
+    <div id="tab1" class="tab-content active">
+        <div class="grid-2">
+            <div class="card">
+                <h2>Add Faculty Member</h2>
+                <form id="facultyForm" onsubmit="addFaculty(event)">
+                    <div class="form-group">
+                        <label>Faculty Name</label>
+                        <input type="text" id="facName" placeholder="e.g. Dr. Joshua White" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Max Course Capacity</label>
+                        <input type="number" id="facMax" min="1" max="6" value="3" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Employment Status</label>
+                        <select id="facType" required>
+                            <option value="Full-Time">Full-Time</option>
+                            <option value="Adjunct">Adjunct</option>
+                            <option value="Part-Time Offramp">Part-Time Offramp</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">+ Add Faculty</button>
+                </form>
+            </div>
+            <div class="card">
+                <h2>Faculty Roster</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Status</th>
+                            <th>Max Courses</th>
+                            <th style="width: 50px;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="facultyTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 2: TIMESLOTS -->
+    <div id="tab2" class="tab-content">
+        <div class="grid-2">
+            <div class="card">
+                <h2>Add Standard Timeslot</h2>
+                <form id="timeslotForm" onsubmit="addTimeslot(event)">
+                    <div class="form-group">
+                        <label>Days Pattern</label>
+                        <select id="tsDays" required>
+                            <option value="MW">Monday / Wednesday (MW)</option>
+                            <option value="TR">Tuesday / Thursday (TR)</option>
+                            <option value="M">Monday Evening (M)</option>
+                            <option value="T">Tuesday Evening (T)</option>
+                            <option value="W">Wednesday Evening (W)</option>
+                            <option value="R">Thursday Evening (R)</option>
+                            <option value="S">Saturday Morning (S)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Start Time</label>
+                        <input type="time" id="tsStart" value="08:30" required>
+                    </div>
+                    <div class="form-group">
+                        <label>End Time</label>
+                        <input type="time" id="tsEnd" value="09:45" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Program Level Restriction</label>
+                        <select id="tsLevel" required>
+                            <option value="Both">Both (Undergrad & Grad)</option>
+                            <option value="Undergraduate">Undergraduate Only</option>
+                            <option value="Graduate">Graduate Only</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">+ Add Timeslot</button>
+                </form>
+            </div>
+            <div class="card">
+                <h2>Standard Offered Timeslots</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Days</th>
+                            <th>Time Block</th>
+                            <th>Level Allowed</th>
+                            <th style="width: 50px;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="timeslotTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 3: COURSES & ASSIGNMENTS -->
+    <div id="tab3" class="tab-content">
+        <div class="capacity-tracker" id="capacityTracker"></div>
+        <div class="grid-2">
+            <div class="card">
+                <h2>Add Program Course</h2>
+                <form id="courseForm" onsubmit="addCourse(event)">
+                    <div class="form-group">
+                        <label>Course Code & Title</label>
+                        <input type="text" id="crsCode" placeholder="e.g. CYB 301 Network Security" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Course Level</label>
+                        <select id="crsLevel" required>
+                            <option value="Undergraduate">Undergraduate</option>
+                            <option value="Graduate">Graduate</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Assigned Instructor</label>
+                        <select id="crsProf" required></select>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">+ Add Course</button>
+                </form>
+            </div>
+            <div class="card">
+                <h2>Program Course Catalog</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Course</th>
+                            <th>Level</th>
+                            <th>Instructor</th>
+                            <th style="width: 50px;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="courseTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 4: GENERATE & VIEW SCHEDULE -->
+    <div id="tab4" class="tab-content">
+        <div class="generator-hero no-print">
+            <h2>Optimal Schedule Generator</h2>
+            <p>Runs a constraint-satisfaction heuristic algorithm to assign timeslots without professor conflicts, avoiding excessive back-to-back hours.</p>
+            
+            <div class="rules-grid">
+                <div class="rule-card">
+                    <label><input type="checkbox" id="ruleNoOverlap" checked disabled> Hard: No Prof Overlaps</label>
+                </div>
+                <div class="rule-card">
+                    <label><input type="checkbox" id="ruleLevelMatch" checked disabled> Hard: Level Restrictions</label>
+                </div>
+                <div class="rule-card">
+                    <label><input type="checkbox" id="ruleAdjunctEvening" checked> Soft: Favor Adjunct Evenings</label>
+                </div>
+                <div class="rule-card">
+                    <label><input type="checkbox" id="ruleAvoidConsecutive" checked> Soft: Min. Consecutive Hrs</label>
+                </div>
+            </div>
+
+            <button class="btn btn-primary" style="padding: 12px 30px; font-size: 16px;" onclick="runOptimizer()">🚀 Generate Optimal Schedule</button>
+        </div>
+
+        <div id="warningsContainer"></div>
+
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center;" class="no-print">
+                <h2>Generated Master Schedule</h2>
+                <div>
+                    <button class="btn btn-secondary" onclick="window.print()">🖨️ Print Schedule</button>
+                    <button class="btn btn-outline" onclick="exportScheduleCSV()">📊 Export CSV</button>
+                </div>
+            </div>
+
+            <div id="scheduleGridOutput" class="schedule-grid">
+                <p style="color: var(--text-muted); text-align: center; grid-column: 1/-1;">Click "Generate Optimal Schedule" above to compute time assignments.</p>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // GLOBAL APP STATE
+    let state = {
+        faculty: [
+            { id: 1, name: "Dr. Joshua White", max: 3, type: "Full-Time" },
+            { id: 2, name: "Prof. Sarah Smith", max: 2, type: "Adjunct" },
+            { id: 3, name: "Dr. Alan Johnson", max: 2, type: "Part-Time Offramp" }
+        ],
+        timeslots: [
+            { id: 1, days: "MW", start: "08:30", end: "09:45", level: "Undergraduate" },
+            { id: 2, days: "MW", start: "10:00", end: "11:15", level: "Undergraduate" },
+            { id: 3, days: "TR", start: "08:30", end: "09:45", level: "Undergraduate" },
+            { id: 4, days: "TR", start: "10:00", end: "11:15", level: "Undergraduate" },
+            { id: 5, days: "M", start: "18:00", end: "20:40", level: "Graduate" },
+            { id: 6, days: "T", start: "18:00", end: "20:40", level: "Graduate" },
+            { id: 7, days: "W", start: "18:00", end: "20:40", level: "Graduate" },
+            { id: 8, days: "R", start: "18:00", end: "20:40", level: "Graduate" }
+        ],
+        courses: [
+            { id: 1, code: "CYB 101 - Intro to Cyber", level: "Undergraduate", profId: 1 },
+            { id: 2, code: "CYB 301 - Network Security", level: "Undergraduate", profId: 1 },
+            { id: 3, code: "CYB 601 - Adv Cyber Defense", level: "Graduate", profId: 2 },
+            { id: 4, code: "CYB 631 - Info Assurance", level: "Graduate", profId: 2 },
+            { id: 5, code: "DSC 505 - Data Analytics", level: "Graduate", profId: 3 }
+        ],
+        schedule: []
+    };
+
+    let nextId = 100;
+
+    // TAB SWITCHING
+    function switchTab(tabNum) {
+        document.querySelectorAll('.tab-btn').forEach((btn, idx) => {
+            btn.classList.toggle('active', idx === tabNum - 1);
+        });
+        document.querySelectorAll('.tab-content').forEach((content, idx) => {
+            content.classList.toggle('active', idx === tabNum - 1);
+        });
+    }
+
+    // RENDER FUNCTIONS
+    function renderAll() {
+        renderFaculty();
+        renderTimeslots();
+        renderCourses();
+        updateBadges();
+    }
+
+    function updateBadges() {
+        document.getElementById('badgeFaculty').innerText = state.faculty.length;
+        document.getElementById('badgeTimeslots').innerText = state.timeslots.length;
+        document.getElementById('badgeCourses').innerText = state.courses.length;
+    }
+
+    function renderFaculty() {
+        const tbody = document.getElementById('facultyTableBody');
+        tbody.innerHTML = '';
+        state.faculty.forEach(f => {
+            let badgeClass = f.type === 'Full-Time' ? 'badge-ft' : (f.type === 'Adjunct' ? 'badge-adjunct' : 'badge-offramp');
+            tbody.innerHTML += `
+                <tr>
+                    <td><strong>${f.name}</strong></td>
+                    <td><span class="status-badge ${badgeClass}">${f.type}</span></td>
+                    <td>${f.max} Courses</td>
+                    <td><button class="btn btn-danger" onclick="deleteFaculty(${f.id})">×</button></td>
+                </tr>
+            `;
+        });
+
+        // Update Course Form Dropdown
+        const select = document.getElementById('crsProf');
+        select.innerHTML = state.faculty.map(f => `<option value="${f.id}">${f.name} (${f.type})</option>`).join('');
+    }
+
+    function renderTimeslots() {
+        const tbody = document.getElementById('timeslotTableBody');
+        tbody.innerHTML = '';
+        state.timeslots.forEach(ts => {
+            let badgeClass = ts.level === 'Undergraduate' ? 'badge-ug' : (ts.level === 'Graduate' ? 'badge-grad' : 'badge-both');
+            tbody.innerHTML += `
+                <tr>
+                    <td><strong>${ts.days}</strong></td>
+                    <td>${ts.start} - ${ts.end}</td>
+                    <td><span class="status-badge ${badgeClass}">${ts.level}</span></td>
+                    <td><button class="btn btn-danger" onclick="deleteTimeslot(${ts.id})">×</button></td>
+                </tr>
+            `;
+        });
+    }
+
+    function renderCourses() {
+        const tbody = document.getElementById('courseTableBody');
+        tbody.innerHTML = '';
+        
+        // Count assigned courses per prof
+        const counts = {};
+        state.courses.forEach(c => { counts[c.profId] = (counts[c.profId] || 0) + 1; });
+
+        state.courses.forEach(c => {
+            const prof = state.faculty.find(f => f.id === c.profId);
+            const profName = prof ? prof.name : 'Unassigned';
+            let badgeClass = c.level === 'Undergraduate' ? 'badge-ug' : 'badge-grad';
+
+            tbody.innerHTML += `
+                <tr>
+                    <td><strong>${c.code}</strong></td>
+                    <td><span class="status-badge ${badgeClass}">${c.level}</span></td>
+                    <td>${profName}</td>
+                    <td><button class="btn btn-danger" onclick="deleteCourse(${c.id})">×</button></td>
+                </tr>
+            `;
+        });
+
+        // Render Capacity Tracker Header
+        const tracker = document.getElementById('capacityTracker');
+        tracker.innerHTML = '<strong>Faculty Capacity Load:</strong><br><br>';
+        state.faculty.forEach(f => {
+            const assigned = counts[f.id] || 0;
+            const pct = Math.min(100, Math.round((assigned / f.max) * 100));
+            const isOver = assigned > f.max;
+            tracker.innerHTML += `
+                <div class="capacity-item">
+                    <span><strong>${f.name}</strong> (${assigned}/${f.max} Courses Assigned)</span>
+                    <div>
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar-fill ${isOver ? 'over' : ''}" style="width: ${pct}%;"></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    // ADD / DELETE ACTIONS
+    function addFaculty(e) {
+        e.preventDefault();
+        state.faculty.push({
+            id: nextId++,
+            name: document.getElementById('facName').value,
+            max: parseInt(document.getElementById('facMax').value),
+            type: document.getElementById('facType').value
+        });
+        document.getElementById('facName').value = '';
+        renderAll();
+    }
+
+    function deleteFaculty(id) {
+        state.faculty = state.faculty.filter(f => f.id !== id);
+        renderAll();
+    }
+
+    function addTimeslot(e) {
+        e.preventDefault();
+        state.timeslots.push({
+            id: nextId++,
+            days: document.getElementById('tsDays').value,
+            start: document.getElementById('tsStart').value,
+            end: document.getElementById('tsEnd').value,
+            level: document.getElementById('tsLevel').value
+        });
+        renderAll();
+    }
+
+    function deleteTimeslot(id) {
+        state.timeslots = state.timeslots.filter(ts => ts.id !== id);
+        renderAll();
+    }
+
+    function addCourse(e) {
+        e.preventDefault();
+        state.courses.push({
+            id: nextId++,
+            code: document.getElementById('crsCode').value,
+            level: document.getElementById('crsLevel').value,
+            profId: parseInt(document.getElementById('crsProf').value)
+        });
+        document.getElementById('crsCode').value = '';
+        renderAll();
+    }
+
+    function deleteCourse(id) {
+        state.courses = state.courses.filter(c => c.id !== id);
+        renderAll();
+    }
+
+    // TIME OVERLAP HELPERS
+    function daysOverlap(d1, d2) {
+        for (let char of d1) {
+            if (d2.includes(char)) return true;
+        }
+        return false;
+    }
+
+    function timeToMins(tStr) {
+        const [h, m] = tStr.split(':').map(Number);
+        return h * 60 + m;
+    }
+
+    function slotsOverlap(ts1, ts2) {
+        if (!daysOverlap(ts1.days, ts2.days)) return false;
+        const start1 = timeToMins(ts1.start), end1 = timeToMins(ts1.end);
+        const start2 = timeToMins(ts2.start), end2 = timeToMins(ts2.end);
+        return (start1 < end2 && start2 < end1);
+    }
+
+    // OPTIMIZER ENGINE (MULTI-START GREEDY / HEURISTIC)
+    function runOptimizer() {
+        const ruleAdjunctEve = document.getElementById('ruleAdjunctEvening').checked;
+        const ruleAvoidConsec = document.getElementById('ruleAvoidConsecutive').checked;
+
+        let bestSchedule = null;
+        let bestScore = -999999;
+        let bestWarnings = [];
+
+        // Run 300 randomized placement iterations to find highest scoring schedule
+        for (let iter = 0; iter < 300; iter++) {
+            let currentSchedule = []; // array of { courseId, timeslotId }
+            let warnings = [];
+            let score = 0;
+            let valid = true;
+
+            // Shuffle courses to test different assignment orders
+            let shuffledCourses = [...state.courses].sort(() => Math.random() - 0.5);
+
+            for (let course of shuffledCourses) {
+                const prof = state.faculty.find(f => f.id === course.profId);
+                
+                // Find candidate timeslots matching hard constraints
+                let candidateSlots = state.timeslots.filter(ts => {
+                    // Level restriction check
+                    if (ts.level === 'Undergraduate' && course.level === 'Graduate') return false;
+                    if (ts.level === 'Graduate' && course.level === 'Undergraduate') return false;
+
+                    // Overlap check with already assigned courses for same professor
+                    const profAssigned = currentSchedule.filter(s => {
+                        const c = state.courses.find(crs => crs.id === s.courseId);
+                        return c.profId === course.profId;
+                    });
+
+                    for (let s of profAssigned) {
+                        const existingTs = state.timeslots.find(t => t.id === s.timeslotId);
+                        if (slotsOverlap(ts, existingTs)) return false;
+                    }
+
+                    return true;
+                });
+
+                if (candidateSlots.length === 0) {
+                    valid = false;
+                    break; // Hard constraint violated: no valid timeslot
+                }
+
+                // Score candidate slots based on soft constraints
+                let scoredSlots = candidateSlots.map(ts => {
+                    let slotScore = 0;
+
+                    // Adjunct Evening Preference
+                    if (ruleAdjunctEve && prof && prof.type === 'Adjunct') {
+                        if (['M','T','W','R'].includes(ts.days) && timeToMins(ts.start) >= 17*60) {
+                            slotScore += 20;
+                        }
+                    }
+
+                    // Consecutive Hours Penalty check
+                    if (ruleAvoidConsec) {
+                        const profAssignedSameDay = currentSchedule.filter(s => {
+                            const c = state.courses.find(crs => crs.id === s.courseId);
+                            const existingTs = state.timeslots.find(t => t.id === s.timeslotId);
+                            return c.profId === course.profId && daysOverlap(existingTs.days, ts.days);
+                        });
+
+                        profAssignedSameDay.forEach(s => {
+                            const existingTs = state.timeslots.find(t => t.id === s.timeslotId);
+                            const diff = Math.abs(timeToMins(ts.start) - timeToMins(existingTs.end));
+                            if (diff < 30) slotScore -= 15; // Penalty for back-to-back
+                        });
+                    }
+
+                    return { ts, score: slotScore };
+                });
+
+                // Pick best slot (add slight randomness among top ties)
+                scoredSlots.sort((a,b) => b.score - a.score);
+                const chosenTs = scoredSlots[0].ts;
+                score += scoredSlots[0].score;
+
+                currentSchedule.push({ courseId: course.id, timeslotId: chosenTs.id });
+            }
+
+            if (valid && score > bestScore) {
+                bestScore = score;
+                bestSchedule = currentSchedule;
+                bestWarnings = warnings;
+            }
+        }
+
+        renderScheduleOutput(bestSchedule);
+    }
+
+    function renderScheduleOutput(schedule) {
+        const grid = document.getElementById('scheduleGridOutput');
+        const warnContainer = document.getElementById('warningsContainer');
+        grid.innerHTML = '';
+        warnContainer.innerHTML = '';
+
+        if (!schedule) {
+            grid.innerHTML = `<div class="warning-box" style="grid-column: 1/-1;">
+                <h4>⚠️ Scheduling Conflict Error</h4>
+                <p>Unable to generate a valid schedule without hard-constraint overlaps. Try adding more timeslots or adjusting faculty assignments.</p>
+            </div>`;
+            return;
+        }
+
+        state.schedule = schedule;
+
+        // Group by Timeslots
+        state.timeslots.forEach(ts => {
+            const assignedInSlot = schedule.filter(s => s.timeslotId === ts.id);
+            
+            let coursesHtml = '';
+            assignedInSlot.forEach(s => {
+                const course = state.courses.find(c => c.id === s.courseId);
+                const prof = state.faculty.find(f => f.id === course.profId);
+                coursesHtml += `
+                    <div class="course-chip">
+                        <div class="course-chip-title">${course.code}</div>
+                        <div class="course-chip-prof">👤 ${prof ? prof.name : 'TBD'}</div>
+                    </div>
+                `;
+            });
+
+            grid.innerHTML += `
+                <div class="slot-card">
+                    <div class="slot-header">
+                        <span>${ts.days} (${ts.start} - ${ts.end})</span>
+                        <span class="status-badge badge-both">${ts.level}</span>
+                    </div>
+                    ${coursesHtml || '<span style="color:#aaa; font-size:11px;">No courses assigned</span>'}
+                </div>
+            `;
+        });
+    }
+
+    // EXPORT & SESSION DATA
+    function exportScheduleCSV() {
+        if (!state.schedule || state.schedule.length === 0) {
+            alert('Please generate a schedule first.');
+            return;
+        }
+
+        let csv = 'Course Code,Level,Instructor,Days,Start Time,End Time\n';
+        state.schedule.forEach(s => {
+            const course = state.courses.find(c => c.id === s.courseId);
+            const prof = state.faculty.find(f => f.id === course.profId);
+            const ts = state.timeslots.find(t => t.id === s.timeslotId);
+            csv += `"${course.code}","${course.level}","${prof ? prof.name : ''}","${ts.days}","${ts.start}","${ts.end}"\n`;
+        });
+
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'Academic_Schedule.csv';
+        a.click();
+    }
+
+    function exportJSON() {
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state, null, 2));
+        const a = document.createElement('a');
+        a.href = dataStr;
+        a.download = 'Schedule_Session.json';
+        a.click();
+    }
+
+    function importJSON(event) {
+        const fileReader = new FileReader();
+        fileReader.onload = function(e) {
+            try {
+                state = JSON.parse(e.target.result);
+                renderAll();
+                alert('Session data loaded successfully!');
+            } catch(err) {
+                alert('Invalid JSON file format.');
+            }
+        };
+        fileReader.readAsText(event.target.files[0]);
+    }
+
+    // INIT PAGE
+    window.onload = function() {
+        renderAll();
+    };
+</script>
+
+</body>
+</html>
