@@ -3,728 +3,1133 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Academic Course Scheduler & Optimizer</title>
-    <style>
-        :root {
-            --primary: #0a2240;
-            --primary-light: #163866;
-            --accent: #f26a21;
-            --accent-hover: #d65813;
-            --bg: #f4f6f9;
-            --card-bg: #ffffff;
-            --border: #e1e5eb;
-            --text: #2c3e50;
-            --text-muted: #7f8c8d;
-            --success: #27ae60;
-            --warning: #f39c12;
-            --danger: #c0392b;
-        }
-
-        * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
-        body { margin: 0; padding: 0; background-color: var(--bg); color: var(--text); }
-
-        /* HEADER */
-        header { background-color: var(--primary); color: white; padding: 20px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.15); }
-        header h1 { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: 0.5px; }
-        header p { margin: 4px 0 0 0; font-size: 13px; opacity: 0.8; }
-        .header-actions { display: flex; gap: 10px; }
-
-        /* CONTAINER & NAVIGATION */
-        .main-container { max-width: 1300px; margin: 25px auto; padding: 0 20px; }
-        .nav-tabs { display: flex; background: white; border-radius: 8px; padding: 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 20px; border: 1px solid var(--border); }
-        .tab-btn { flex: 1; padding: 12px; border: none; background: transparent; font-size: 14px; font-weight: 600; color: var(--text-muted); cursor: pointer; border-radius: 6px; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .tab-btn.active { background-color: var(--primary); color: white; }
-        .tab-btn .badge { background: rgba(0,0,0,0.15); padding: 2px 8px; border-radius: 12px; font-size: 11px; }
-        .tab-btn.active .badge { background: var(--accent); color: white; }
-
-        /* TAB PANELS */
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-
-        /* CARDS & LAYOUT */
-        .grid-2 { display: grid; grid-template-columns: 350px 1fr; gap: 20px; }
-        @media (max-width: 900px) { .grid-2 { grid-template-columns: 1fr; } }
-        
-        .card { background: var(--card-bg); border-radius: 8px; border: 1px solid var(--border); padding: 20px; box-shadow: 0 2px 6px rgba(0,0,0,0.03); margin-bottom: 20px; }
-        .card h2 { margin-top: 0; font-size: 16px; color: var(--primary); border-bottom: 2px solid var(--accent); padding-bottom: 8px; margin-bottom: 15px; }
-
-        /* FORMS & INPUTS */
-        .form-group { margin-bottom: 12px; }
-        label { display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 4px; }
-        input, select { width: 100%; padding: 9px 11px; border: 1px solid var(--border); border-radius: 5px; font-size: 13px; background: white; }
-        input:focus, select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px rgba(242,106,33,0.15); }
-        
-        /* BUTTONS */
-        .btn { padding: 9px 16px; border: none; border-radius: 5px; font-weight: 600; font-size: 13px; cursor: pointer; transition: background 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
-        .btn-primary { background: var(--accent); color: white; }
-        .btn-primary:hover { background: var(--accent-hover); }
-        .btn-secondary { background: var(--primary); color: white; }
-        .btn-secondary:hover { background: var(--primary-light); }
-        .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
-        .btn-outline:hover { background: #f0f3f7; }
-        .btn-danger { background: #e74c3c; color: white; padding: 4px 8px; font-size: 11px; }
-        .btn-danger:hover { background: #c0392b; }
-        .btn-block { width: 100%; }
-
-        /* TABLES */
-        table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        th { background: #f8fafc; text-align: left; padding: 10px; border-bottom: 2px solid var(--border); font-size: 11px; text-transform: uppercase; color: var(--text-muted); }
-        td { padding: 10px; border-bottom: 1px solid var(--border); vertical-align: middle; }
-        tr:hover { background-color: #fcfdfe; }
-
-        /* BADGES & TAGS */
-        .status-badge { display: inline-block; padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: 700; }
-        .badge-ft { background: #e3f2fd; color: #1565c0; }
-        .badge-adjunct { background: #f3e5f5; color: #7b1fa2; }
-        .badge-offramp { background: #fff3e0; color: #e65100; }
-        .badge-ug { background: #e8f5e9; color: #2e7d32; }
-        .badge-grad { background: #fce4ec; color: #c2185b; }
-        .badge-both { background: #ede7f6; color: #512da8; }
-
-        /* CAPACITY BAR */
-        .capacity-tracker { background: #f8fafc; padding: 15px; border-radius: 6px; border: 1px solid var(--border); margin-bottom: 15px; }
-        .capacity-item { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; font-size: 12px; }
-        .progress-bar-bg { width: 120px; height: 8px; background: #e0e0e0; border-radius: 4px; overflow: hidden; display: inline-block; }
-        .progress-bar-fill { height: 100%; background: var(--success); transition: width 0.3s; }
-        .progress-bar-fill.over { background: var(--danger); }
-
-        /* GENERATOR & SCHEDULE OUTPUT */
-        .generator-hero { text-align: center; padding: 25px; background: white; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 20px; }
-        .generator-hero h2 { margin: 0 0 10px 0; color: var(--primary); }
-        .generator-hero p { margin: 0 0 20px 0; color: var(--text-muted); font-size: 14px; }
-        
-        .rules-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 20px; text-align: left; }
-        .rule-card { background: #f8fafc; border: 1px solid var(--border); border-radius: 6px; padding: 12px; }
-        .rule-card label { display: flex; align-items: center; gap: 8px; text-transform: none; font-size: 12px; font-weight: bold; color: var(--text); }
-
-        .schedule-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; margin-top: 15px; }
-        .slot-card { background: white; border: 1px solid var(--border); border-radius: 6px; padding: 12px; border-top: 4px solid var(--primary); }
-        .slot-header { font-weight: bold; font-size: 13px; color: var(--primary); margin-bottom: 8px; display: flex; justify-content: space-between; }
-        .course-chip { background: #f0f4f8; border-left: 3px solid var(--accent); padding: 8px; border-radius: 4px; margin-top: 6px; font-size: 12px; }
-        .course-chip-title { font-weight: bold; color: #000; }
-        .course-chip-prof { color: var(--text-muted); font-size: 11px; margin-top: 2px; }
-
-        .warning-box { background: #fff8e1; border-left: 4px solid var(--warning); padding: 12px; border-radius: 4px; margin-bottom: 15px; font-size: 13px; }
-        .warning-box h4 { margin: 0 0 6px 0; color: #b78103; font-size: 13px; }
-        .warning-box ul { margin: 0; padding-left: 18px; }
-
-        /* PRINT STYLES */
-        @media print {
-            header, .nav-tabs, .no-print { display: none !important; }
-            body { background: white; padding: 0; }
-            .card { border: none; box-shadow: none; padding: 0; }
-            .schedule-grid { grid-template-columns: 1fr 1fr; }
-        }
-    </style>
+    <title>Academic Course Scheduler & Banner Exporter</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- SheetJS CDN for Excel (.xlsx/.xls) and CSV parsing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
-<body>
+<body class="bg-slate-100 text-slate-800 min-h-screen font-sans flex flex-col">
 
-<header>
-    <div>
-        <h1>Academic Course Scheduler & Optimizer</h1>
-        <p>Cybersecurity & Business Programs Planning Tool</p>
-    </div>
-    <div class="header-actions no-print">
-        <button class="btn btn-outline" style="color: white; border-color: rgba(255,255,255,0.3);" onclick="exportJSON()">💾 Save Session</button>
-        <button class="btn btn-outline" style="color: white; border-color: rgba(255,255,255,0.3);" onclick="document.getElementById('importFile').click()">📂 Load Session</button>
-        <input type="file" id="importFile" style="display:none;" onchange="importJSON(event)">
-    </div>
-</header>
-
-<div class="main-container">
-
-    <!-- STEP NAVIGATION TABS -->
-    <div class="nav-tabs no-print">
-        <button class="tab-btn active" onclick="switchTab(1)">
-            <span>1. Faculty Roster</span>
-            <span class="badge" id="badgeFaculty">0</span>
-        </button>
-        <button class="tab-btn" onclick="switchTab(2)">
-            <span>2. Timeslots</span>
-            <span class="badge" id="badgeTimeslots">0</span>
-        </button>
-        <button class="tab-btn" onclick="switchTab(3)">
-            <span>3. Courses & Assignments</span>
-            <span class="badge" id="badgeCourses">0</span>
-        </button>
-        <button class="tab-btn" onclick="switchTab(4)">
-            <span>4. Generate & View Schedule</span>
-        </button>
-    </div>
-
-    <!-- TAB 1: FACULTY ROSTER -->
-    <div id="tab1" class="tab-content active">
-        <div class="grid-2">
-            <div class="card">
-                <h2>Add Faculty Member</h2>
-                <form id="facultyForm" onsubmit="addFaculty(event)">
-                    <div class="form-group">
-                        <label>Faculty Name</label>
-                        <input type="text" id="facName" placeholder="e.g. Dr. Joshua White" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Max Course Capacity</label>
-                        <input type="number" id="facMax" min="1" max="6" value="3" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Employment Status</label>
-                        <select id="facType" required>
-                            <option value="Full-Time">Full-Time</option>
-                            <option value="Adjunct">Adjunct</option>
-                            <option value="Part-Time Offramp">Part-Time Offramp</option>
-                        </select>
-                    </div>
-                    <button type="submit" class="btn btn-primary btn-block">+ Add Faculty</button>
-                </form>
-            </div>
-            <div class="card">
-                <h2>Faculty Roster</h2>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Status</th>
-                            <th>Max Courses</th>
-                            <th style="width: 50px;">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody id="facultyTableBody"></tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <!-- TAB 2: TIMESLOTS -->
-    <div id="tab2" class="tab-content">
-        <div class="grid-2">
-            <div class="card">
-                <h2>Add Standard Timeslot</h2>
-                <form id="timeslotForm" onsubmit="addTimeslot(event)">
-                    <div class="form-group">
-                        <label>Days Pattern</label>
-                        <select id="tsDays" required>
-                            <option value="MW">Monday / Wednesday (MW)</option>
-                            <option value="TR">Tuesday / Thursday (TR)</option>
-                            <option value="M">Monday Evening (M)</option>
-                            <option value="T">Tuesday Evening (T)</option>
-                            <option value="W">Wednesday Evening (W)</option>
-                            <option value="R">Thursday Evening (R)</option>
-                            <option value="S">Saturday Morning (S)</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Start Time</label>
-                        <input type="time" id="tsStart" value="08:30" required>
-                    </div>
-                    <div class="form-group">
-                        <label>End Time</label>
-                        <input type="time" id="tsEnd" value="09:45" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Program Level Restriction</label>
-                        <select id="tsLevel" required>
-                            <option value="Both">Both (Undergrad & Grad)</option>
-                            <option value="Undergraduate">Undergraduate Only</option>
-                            <option value="Graduate">Graduate Only</option>
-                        </select>
-                    </div>
-                    <button type="submit" class="btn btn-primary btn-block">+ Add Timeslot</button>
-                </form>
-            </div>
-            <div class="card">
-                <h2>Standard Offered Timeslots</h2>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Days</th>
-                            <th>Time Block</th>
-                            <th>Level Allowed</th>
-                            <th style="width: 50px;">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody id="timeslotTableBody"></tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <!-- TAB 3: COURSES & ASSIGNMENTS -->
-    <div id="tab3" class="tab-content">
-        <div class="capacity-tracker" id="capacityTracker"></div>
-        <div class="grid-2">
-            <div class="card">
-                <h2>Add Program Course</h2>
-                <form id="courseForm" onsubmit="addCourse(event)">
-                    <div class="form-group">
-                        <label>Course Code & Title</label>
-                        <input type="text" id="crsCode" placeholder="e.g. CYB 301 Network Security" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Course Level</label>
-                        <select id="crsLevel" required>
-                            <option value="Undergraduate">Undergraduate</option>
-                            <option value="Graduate">Graduate</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Assigned Instructor</label>
-                        <select id="crsProf" required></select>
-                    </div>
-                    <button type="submit" class="btn btn-primary btn-block">+ Add Course</button>
-                </form>
-            </div>
-            <div class="card">
-                <h2>Program Course Catalog</h2>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Course</th>
-                            <th>Level</th>
-                            <th>Instructor</th>
-                            <th style="width: 50px;">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody id="courseTableBody"></tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <!-- TAB 4: GENERATE & VIEW SCHEDULE -->
-    <div id="tab4" class="tab-content">
-        <div class="generator-hero no-print">
-            <h2>Optimal Schedule Generator</h2>
-            <p>Runs a constraint-satisfaction heuristic algorithm to assign timeslots without professor conflicts, avoiding excessive back-to-back hours.</p>
-            
-            <div class="rules-grid">
-                <div class="rule-card">
-                    <label><input type="checkbox" id="ruleNoOverlap" checked disabled> Hard: No Prof Overlaps</label>
-                </div>
-                <div class="rule-card">
-                    <label><input type="checkbox" id="ruleLevelMatch" checked disabled> Hard: Level Restrictions</label>
-                </div>
-                <div class="rule-card">
-                    <label><input type="checkbox" id="ruleAdjunctEvening" checked> Soft: Favor Adjunct Evenings</label>
-                </div>
-                <div class="rule-card">
-                    <label><input type="checkbox" id="ruleAvoidConsecutive" checked> Soft: Min. Consecutive Hrs</label>
-                </div>
-            </div>
-
-            <button class="btn btn-primary" style="padding: 12px 30px; font-size: 16px;" onclick="runOptimizer()">🚀 Generate Optimal Schedule</button>
-        </div>
-
-        <div id="warningsContainer"></div>
-
-        <div class="card">
-            <div style="display: flex; justify-content: space-between; align-items: center;" class="no-print">
-                <h2>Generated Master Schedule</h2>
+    <!-- Header -->
+    <header class="bg-indigo-900 text-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <i class="fa-solid fa-calendar-days text-3xl text-indigo-400"></i>
                 <div>
-                    <button class="btn btn-secondary" onclick="window.print()">🖨️ Print Schedule</button>
-                    <button class="btn btn-outline" onclick="exportScheduleCSV()">📊 Export CSV</button>
+                    <h1 class="text-xl font-bold tracking-wide">Academic Course Scheduler</h1>
+                    <p class="text-xs text-indigo-200">Banner Schedule Roll Template Generator</p>
+                </div>
+            </div>
+            <div class="flex space-x-2">
+                <button onclick="runAutoScheduler()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-4 py-2 rounded-lg shadow flex items-center space-x-2 transition">
+                    <i class="fa-solid fa-bolt"></i>
+                    <span>Generate Schedule</span>
+                </button>
+                <button onclick="exportToBannerCSV()" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg shadow flex items-center space-x-2 transition">
+                    <i class="fa-solid fa-file-csv"></i>
+                    <span>Export Banner output.csv</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <nav class="bg-white border-b border-slate-200 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 flex space-x-8">
+            <button onclick="switchTab('dashboard')" id="tab-dashboard" class="tab-btn py-4 px-2 border-b-2 font-medium text-sm border-indigo-600 text-indigo-600 flex items-center space-x-2">
+                <i class="fa-solid fa-chart-pie"></i><span>Dashboard</span>
+            </button>
+            <button onclick="switchTab('faculty')" id="tab-faculty" class="tab-btn py-4 px-2 border-b-2 font-medium text-sm border-transparent text-slate-500 hover:text-slate-700 flex items-center space-x-2">
+                <i class="fa-solid fa-user-graduate"></i><span>Faculty Roster</span>
+            </button>
+            <button onclick="switchTab('courses')" id="tab-courses" class="tab-btn py-4 px-2 border-b-2 font-medium text-sm border-transparent text-slate-500 hover:text-slate-700 flex items-center space-x-2">
+                <i class="fa-solid fa-book"></i><span>Course Catalog</span>
+            </button>
+            <button onclick="switchTab('rooms')" id="tab-rooms" class="tab-btn py-4 px-2 border-b-2 font-medium text-sm border-transparent text-slate-500 hover:text-slate-700 flex items-center space-x-2">
+                <i class="fa-solid fa-door-open"></i><span>Classrooms</span>
+            </button>
+            <button onclick="switchTab('timeslots')" id="tab-timeslots" class="tab-btn py-4 px-2 border-b-2 font-medium text-sm border-transparent text-slate-500 hover:text-slate-700 flex items-center space-x-2">
+                <i class="fa-solid fa-clock"></i><span>Timeslots</span>
+            </button>
+            <button onclick="switchTab('schedule')" id="tab-schedule" class="tab-btn py-4 px-2 border-b-2 font-medium text-sm border-transparent text-slate-500 hover:text-slate-700 flex items-center space-x-2">
+                <i class="fa-solid fa-table-cells"></i><span>Schedule View</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="max-w-7xl mx-auto px-4 py-6 flex-grow w-full">
+
+        <!-- DASHBOARD TAB -->
+        <section id="content-dashboard" class="tab-content space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                    <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Courses</div>
+                    <div class="text-3xl font-extrabold text-indigo-900 mt-2" id="stat-total-courses">0</div>
+                    <div class="text-xs text-slate-500 mt-1" id="stat-courses-breakdown">0 On-Ground / 0 Online</div>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                    <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Faculty Roster</div>
+                    <div class="text-3xl font-extrabold text-indigo-900 mt-2" id="stat-total-faculty">0</div>
+                    <div class="text-xs text-slate-500 mt-1">Active Professors</div>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                    <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Classrooms</div>
+                    <div class="text-3xl font-extrabold text-indigo-900 mt-2" id="stat-total-rooms">0</div>
+                    <div class="text-xs text-slate-500 mt-1">Available Rooms</div>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                    <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Schedule Status</div>
+                    <div class="text-3xl font-extrabold text-amber-600 mt-2" id="stat-schedule-status">Pending</div>
+                    <div class="text-xs text-slate-500 mt-1" id="stat-conflicts-count">0 Conflicts Detected</div>
                 </div>
             </div>
 
-            <div id="scheduleGridOutput" class="schedule-grid">
-                <p style="color: var(--text-muted); text-align: center; grid-column: 1/-1;">Click "Generate Optimal Schedule" above to compute time assignments.</p>
+            <!-- Overview Banner -->
+            <div class="bg-indigo-50 border border-indigo-100 rounded-xl p-6 flex flex-col md:flex-row items-center justify-between">
+                <div>
+                    <h2 class="text-lg font-bold text-indigo-900">Banner Schedule Roll Setup Ready</h2>
+                    <p class="text-sm text-indigo-700 mt-1">Upload faculty Excel files, manage max seats, customize default MWF/MF/TR timeslots, and export to Banner format.</p>
+                </div>
+                <div class="mt-4 md:mt-0 flex space-x-3">
+                    <button onclick="loadSampleData()" class="bg-white border border-indigo-300 text-indigo-700 hover:bg-indigo-100 font-semibold px-4 py-2 rounded-lg text-sm shadow-sm transition">
+                        Load Sample Data
+                    </button>
+                    <button onclick="runAutoScheduler()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-4 py-2 rounded-lg text-sm shadow transition">
+                        Auto-Assign Schedule
+                    </button>
+                </div>
             </div>
+        </section>
+
+        <!-- FACULTY TAB -->
+        <section id="content-faculty" class="tab-content hidden space-y-6">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-800">Faculty Management</h2>
+                    <p class="text-sm text-slate-500">Upload Banner ID spreadsheets or add faculty members manually.</p>
+                </div>
+                <div class="flex space-x-3">
+                    <!-- File Upload Input -->
+                    <label class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-4 py-2 rounded-lg shadow text-sm cursor-pointer flex items-center space-x-2 transition">
+                        <i class="fa-solid fa-file-excel"></i>
+                        <span>Import Excel / CSV</span>
+                        <input type="file" id="faculty-file-input" accept=".xlsx, .xls, .csv" class="hidden" onchange="importFacultyFile(event)">
+                    </label>
+                    <button onclick="openFacultyModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-4 py-2 rounded-lg shadow text-sm flex items-center space-x-2 transition">
+                        <i class="fa-solid fa-plus"></i><span>Add Faculty Member</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-50 border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase">
+                            <th class="p-4">Banner ID</th>
+                            <th class="p-4">Faculty Name</th>
+                            <th class="p-4">Max Course Load</th>
+                            <th class="p-4">Assigned Courses</th>
+                            <th class="p-4 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="faculty-table-body" class="divide-y divide-slate-200 text-sm">
+                        <!-- Populated dynamically -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- COURSE CATALOG TAB -->
+        <section id="content-courses" class="tab-content hidden space-y-6">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-800">Course Catalog</h2>
+                    <p class="text-sm text-slate-500">Configure department courses, section capacity (Max Seats), and modality.</p>
+                </div>
+                <button onclick="openCourseModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-4 py-2 rounded-lg shadow text-sm flex items-center space-x-2 transition">
+                    <i class="fa-solid fa-plus"></i><span>Add Course</span>
+                </button>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-50 border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase">
+                            <th class="p-4">CRN / Code</th>
+                            <th class="p-4">Course Title</th>
+                            <th class="p-4">Section</th>
+                            <th class="p-4">Max Seats</th>
+                            <th class="p-4">Modality</th>
+                            <th class="p-4">Preferred Slot</th>
+                            <th class="p-4">Assigned Room</th>
+                            <th class="p-4">Assigned Instructor</th>
+                            <th class="p-4 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="course-table-body" class="divide-y divide-slate-200 text-sm">
+                        <!-- Populated dynamically -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- CLASSROOMS TAB -->
+        <section id="content-rooms" class="tab-content hidden space-y-6">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-800">Classroom Management</h2>
+                    <p class="text-sm text-slate-500">Manage available campus rooms, seating capacity, and room types.</p>
+                </div>
+                <button onclick="openRoomModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-4 py-2 rounded-lg shadow text-sm flex items-center space-x-2 transition">
+                    <i class="fa-solid fa-plus"></i><span>Add Room</span>
+                </button>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-50 border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase">
+                            <th class="p-4">Building & Room</th>
+                            <th class="p-4">Seating Capacity</th>
+                            <th class="p-4">Room Type</th>
+                            <th class="p-4 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="room-table-body" class="divide-y divide-slate-200 text-sm">
+                        <!-- Populated dynamically -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- TIMESLOTS TAB -->
+        <section id="content-timeslots" class="tab-content hidden space-y-6">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-800">Standard Timeslots</h2>
+                    <p class="text-sm text-slate-500">Configure default teaching blocks for MWF, MF, and TR schedule patterns.</p>
+                </div>
+                <button onclick="openTimeslotModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-4 py-2 rounded-lg shadow text-sm flex items-center space-x-2 transition">
+                    <i class="fa-solid fa-plus"></i><span>Add Custom Timeslot</span>
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- MWF Card -->
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+                    <div class="flex items-center justify-between border-b pb-3 mb-4">
+                        <h3 class="font-bold text-indigo-900 flex items-center space-x-2">
+                            <i class="fa-solid fa-calendar-day text-indigo-600"></i>
+                            <span>Monday Wednesday Friday (MWF)</span>
+                        </h3>
+                        <span class="text-xs font-semibold px-2 py-1 bg-indigo-50 text-indigo-700 rounded">50 min blocks</span>
+                    </div>
+                    <div id="timeslots-mwf-list" class="space-y-2"></div>
+                </div>
+
+                <!-- MF Card -->
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+                    <div class="flex items-center justify-between border-b pb-3 mb-4">
+                        <h3 class="font-bold text-indigo-900 flex items-center space-x-2">
+                            <i class="fa-solid fa-calendar-day text-indigo-600"></i>
+                            <span>Monday Friday (MF)</span>
+                        </h3>
+                        <span class="text-xs font-semibold px-2 py-1 bg-indigo-50 text-indigo-700 rounded">75 min blocks</span>
+                    </div>
+                    <div id="timeslots-mf-list" class="space-y-2"></div>
+                </div>
+
+                <!-- TR Card -->
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+                    <div class="flex items-center justify-between border-b pb-3 mb-4">
+                        <h3 class="font-bold text-indigo-900 flex items-center space-x-2">
+                            <i class="fa-solid fa-calendar-day text-indigo-600"></i>
+                            <span>Tuesday Thursday (TR)</span>
+                        </h3>
+                        <span class="text-xs font-semibold px-2 py-1 bg-indigo-50 text-indigo-700 rounded">75 min blocks</span>
+                    </div>
+                    <div id="timeslots-tr-list" class="space-y-2"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SCHEDULE VIEW TAB -->
+        <section id="content-schedule" class="tab-content hidden space-y-6">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-800">Master Schedule Grid</h2>
+                    <p class="text-sm text-slate-500">Visual weekly layout of assigned courses across campus.</p>
+                </div>
+                <button onclick="exportToBannerCSV()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-4 py-2 rounded-lg shadow text-sm flex items-center space-x-2 transition">
+                    <i class="fa-solid fa-download"></i><span>Download output.csv</span>
+                </button>
+            </div>
+
+            <!-- Schedule Timetable Grid -->
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-x-auto p-4">
+                <table class="w-full text-center border-collapse min-w-[800px]">
+                    <thead>
+                        <tr class="bg-slate-100 text-slate-700 text-xs uppercase font-bold">
+                            <th class="p-3 border">Day Pattern</th>
+                            <th class="p-3 border">Time Block</th>
+                            <th class="p-3 border">Scheduled Course & Room</th>
+                            <th class="p-3 border">Assigned Instructor</th>
+                        </tr>
+                    </thead>
+                    <tbody id="schedule-grid-body" class="text-sm divide-y divide-slate-200">
+                        <!-- Generated dynamically -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- MODALS -->
+
+    <!-- Faculty Modal -->
+    <div id="faculty-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden flex justify-center items-center z-50">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
+            <h3 class="text-lg font-bold text-slate-800 mb-4" id="faculty-modal-title">Add Faculty Member</h3>
+            <form onsubmit="saveFaculty(event)" class="space-y-4">
+                <input type="hidden" id="faculty-id">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Banner ID</label>
+                    <input type="text" id="faculty-banner-id" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">First Name</label>
+                        <input type="text" id="faculty-first-name" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Last Name</label>
+                        <input type="text" id="faculty-last-name" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Max Courses Allowed</label>
+                    <input type="number" id="faculty-max-courses" value="3" min="1" max="10" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
+                </div>
+                <div class="flex justify-end space-x-3 pt-4 border-t">
+                    <button type="button" onclick="closeFacultyModal()" class="px-4 py-2 border border-slate-300 text-slate-600 rounded-lg text-sm font-semibold hover:bg-slate-50">Cancel</button>
+                    <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-semibold">Save Faculty</button>
+                </div>
+            </form>
         </div>
     </div>
 
-</div>
-
-<script>
-    // GLOBAL APP STATE
-    let state = {
-        faculty: [
-            { id: 1, name: "Dr. Joshua White", max: 3, type: "Full-Time" },
-            { id: 2, name: "Prof. Sarah Smith", max: 2, type: "Adjunct" },
-            { id: 3, name: "Dr. Alan Johnson", max: 2, type: "Part-Time Offramp" }
-        ],
-        timeslots: [
-            { id: 1, days: "MW", start: "08:30", end: "09:45", level: "Undergraduate" },
-            { id: 2, days: "MW", start: "10:00", end: "11:15", level: "Undergraduate" },
-            { id: 3, days: "TR", start: "08:30", end: "09:45", level: "Undergraduate" },
-            { id: 4, days: "TR", start: "10:00", end: "11:15", level: "Undergraduate" },
-            { id: 5, days: "M", start: "18:00", end: "20:40", level: "Graduate" },
-            { id: 6, days: "T", start: "18:00", end: "20:40", level: "Graduate" },
-            { id: 7, days: "W", start: "18:00", end: "20:40", level: "Graduate" },
-            { id: 8, days: "R", start: "18:00", end: "20:40", level: "Graduate" }
-        ],
-        courses: [
-            { id: 1, code: "CYB 101 - Intro to Cyber", level: "Undergraduate", profId: 1 },
-            { id: 2, code: "CYB 301 - Network Security", level: "Undergraduate", profId: 1 },
-            { id: 3, code: "CYB 601 - Adv Cyber Defense", level: "Graduate", profId: 2 },
-            { id: 4, code: "CYB 631 - Info Assurance", level: "Graduate", profId: 2 },
-            { id: 5, code: "DSC 505 - Data Analytics", level: "Graduate", profId: 3 }
-        ],
-        schedule: []
-    };
-
-    let nextId = 100;
-
-    // TAB SWITCHING
-    function switchTab(tabNum) {
-        document.querySelectorAll('.tab-btn').forEach((btn, idx) => {
-            btn.classList.toggle('active', idx === tabNum - 1);
-        });
-        document.querySelectorAll('.tab-content').forEach((content, idx) => {
-            content.classList.toggle('active', idx === tabNum - 1);
-        });
-    }
-
-    // RENDER FUNCTIONS
-    function renderAll() {
-        renderFaculty();
-        renderTimeslots();
-        renderCourses();
-        updateBadges();
-    }
-
-    function updateBadges() {
-        document.getElementById('badgeFaculty').innerText = state.faculty.length;
-        document.getElementById('badgeTimeslots').innerText = state.timeslots.length;
-        document.getElementById('badgeCourses').innerText = state.courses.length;
-    }
-
-    function renderFaculty() {
-        const tbody = document.getElementById('facultyTableBody');
-        tbody.innerHTML = '';
-        state.faculty.forEach(f => {
-            let badgeClass = f.type === 'Full-Time' ? 'badge-ft' : (f.type === 'Adjunct' ? 'badge-adjunct' : 'badge-offramp');
-            tbody.innerHTML += `
-                <tr>
-                    <td><strong>${f.name}</strong></td>
-                    <td><span class="status-badge ${badgeClass}">${f.type}</span></td>
-                    <td>${f.max} Courses</td>
-                    <td><button class="btn btn-danger" onclick="deleteFaculty(${f.id})">×</button></td>
-                </tr>
-            `;
-        });
-
-        // Update Course Form Dropdown
-        const select = document.getElementById('crsProf');
-        select.innerHTML = state.faculty.map(f => `<option value="${f.id}">${f.name} (${f.type})</option>`).join('');
-    }
-
-    function renderTimeslots() {
-        const tbody = document.getElementById('timeslotTableBody');
-        tbody.innerHTML = '';
-        state.timeslots.forEach(ts => {
-            let badgeClass = ts.level === 'Undergraduate' ? 'badge-ug' : (ts.level === 'Graduate' ? 'badge-grad' : 'badge-both');
-            tbody.innerHTML += `
-                <tr>
-                    <td><strong>${ts.days}</strong></td>
-                    <td>${ts.start} - ${ts.end}</td>
-                    <td><span class="status-badge ${badgeClass}">${ts.level}</span></td>
-                    <td><button class="btn btn-danger" onclick="deleteTimeslot(${ts.id})">×</button></td>
-                </tr>
-            `;
-        });
-    }
-
-    function renderCourses() {
-        const tbody = document.getElementById('courseTableBody');
-        tbody.innerHTML = '';
-        
-        // Count assigned courses per prof
-        const counts = {};
-        state.courses.forEach(c => { counts[c.profId] = (counts[c.profId] || 0) + 1; });
-
-        state.courses.forEach(c => {
-            const prof = state.faculty.find(f => f.id === c.profId);
-            const profName = prof ? prof.name : 'Unassigned';
-            let badgeClass = c.level === 'Undergraduate' ? 'badge-ug' : 'badge-grad';
-
-            tbody.innerHTML += `
-                <tr>
-                    <td><strong>${c.code}</strong></td>
-                    <td><span class="status-badge ${badgeClass}">${c.level}</span></td>
-                    <td>${profName}</td>
-                    <td><button class="btn btn-danger" onclick="deleteCourse(${c.id})">×</button></td>
-                </tr>
-            `;
-        });
-
-        // Render Capacity Tracker Header
-        const tracker = document.getElementById('capacityTracker');
-        tracker.innerHTML = '<strong>Faculty Capacity Load:</strong><br><br>';
-        state.faculty.forEach(f => {
-            const assigned = counts[f.id] || 0;
-            const pct = Math.min(100, Math.round((assigned / f.max) * 100));
-            const isOver = assigned > f.max;
-            tracker.innerHTML += `
-                <div class="capacity-item">
-                    <span><strong>${f.name}</strong> (${assigned}/${f.max} Courses Assigned)</span>
+    <!-- Course Modal -->
+    <div id="course-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden flex justify-center items-center z-50">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-lg p-6">
+            <h3 class="text-lg font-bold text-slate-800 mb-4" id="course-modal-title">Add Course</h3>
+            <form onsubmit="saveCourse(event)" class="space-y-4">
+                <input type="hidden" id="course-id">
+                <div class="grid grid-cols-3 gap-3">
                     <div>
-                        <div class="progress-bar-bg">
-                            <div class="progress-bar-fill ${isOver ? 'over' : ''}" style="width: ${pct}%;"></div>
-                        </div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Subject</label>
+                        <input type="text" id="course-subj" placeholder="CYB" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Crse#</label>
+                        <input type="text" id="course-num" placeholder="101" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Section</label>
+                        <input type="text" id="course-section" placeholder="A" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
                     </div>
                 </div>
-            `;
-        });
-    }
 
-    // ADD / DELETE ACTIONS
-    function addFaculty(e) {
-        e.preventDefault();
-        state.faculty.push({
-            id: nextId++,
-            name: document.getElementById('facName').value,
-            max: parseInt(document.getElementById('facMax').value),
-            type: document.getElementById('facType').value
-        });
-        document.getElementById('facName').value = '';
-        renderAll();
-    }
-
-    function deleteFaculty(id) {
-        state.faculty = state.faculty.filter(f => f.id !== id);
-        renderAll();
-    }
-
-    function addTimeslot(e) {
-        e.preventDefault();
-        state.timeslots.push({
-            id: nextId++,
-            days: document.getElementById('tsDays').value,
-            start: document.getElementById('tsStart').value,
-            end: document.getElementById('tsEnd').value,
-            level: document.getElementById('tsLevel').value
-        });
-        renderAll();
-    }
-
-    function deleteTimeslot(id) {
-        state.timeslots = state.timeslots.filter(ts => ts.id !== id);
-        renderAll();
-    }
-
-    function addCourse(e) {
-        e.preventDefault();
-        state.courses.push({
-            id: nextId++,
-            code: document.getElementById('crsCode').value,
-            level: document.getElementById('crsLevel').value,
-            profId: parseInt(document.getElementById('crsProf').value)
-        });
-        document.getElementById('crsCode').value = '';
-        renderAll();
-    }
-
-    function deleteCourse(id) {
-        state.courses = state.courses.filter(c => c.id !== id);
-        renderAll();
-    }
-
-    // TIME OVERLAP HELPERS
-    function daysOverlap(d1, d2) {
-        for (let char of d1) {
-            if (d2.includes(char)) return true;
-        }
-        return false;
-    }
-
-    function timeToMins(tStr) {
-        const [h, m] = tStr.split(':').map(Number);
-        return h * 60 + m;
-    }
-
-    function slotsOverlap(ts1, ts2) {
-        if (!daysOverlap(ts1.days, ts2.days)) return false;
-        const start1 = timeToMins(ts1.start), end1 = timeToMins(ts1.end);
-        const start2 = timeToMins(ts2.start), end2 = timeToMins(ts2.end);
-        return (start1 < end2 && start2 < end1);
-    }
-
-    // OPTIMIZER ENGINE (MULTI-START GREEDY / HEURISTIC)
-    function runOptimizer() {
-        const ruleAdjunctEve = document.getElementById('ruleAdjunctEvening').checked;
-        const ruleAvoidConsec = document.getElementById('ruleAvoidConsecutive').checked;
-
-        let bestSchedule = null;
-        let bestScore = -999999;
-        let bestWarnings = [];
-
-        // Run 300 randomized placement iterations to find highest scoring schedule
-        for (let iter = 0; iter < 300; iter++) {
-            let currentSchedule = []; // array of { courseId, timeslotId }
-            let warnings = [];
-            let score = 0;
-            let valid = true;
-
-            // Shuffle courses to test different assignment orders
-            let shuffledCourses = [...state.courses].sort(() => Math.random() - 0.5);
-
-            for (let course of shuffledCourses) {
-                const prof = state.faculty.find(f => f.id === course.profId);
-                
-                // Find candidate timeslots matching hard constraints
-                let candidateSlots = state.timeslots.filter(ts => {
-                    // Level restriction check
-                    if (ts.level === 'Undergraduate' && course.level === 'Graduate') return false;
-                    if (ts.level === 'Graduate' && course.level === 'Undergraduate') return false;
-
-                    // Overlap check with already assigned courses for same professor
-                    const profAssigned = currentSchedule.filter(s => {
-                        const c = state.courses.find(crs => crs.id === s.courseId);
-                        return c.profId === course.profId;
-                    });
-
-                    for (let s of profAssigned) {
-                        const existingTs = state.timeslots.find(t => t.id === s.timeslotId);
-                        if (slotsOverlap(ts, existingTs)) return false;
-                    }
-
-                    return true;
-                });
-
-                if (candidateSlots.length === 0) {
-                    valid = false;
-                    break; // Hard constraint violated: no valid timeslot
-                }
-
-                // Score candidate slots based on soft constraints
-                let scoredSlots = candidateSlots.map(ts => {
-                    let slotScore = 0;
-
-                    // Adjunct Evening Preference
-                    if (ruleAdjunctEve && prof && prof.type === 'Adjunct') {
-                        if (['M','T','W','R'].includes(ts.days) && timeToMins(ts.start) >= 17*60) {
-                            slotScore += 20;
-                        }
-                    }
-
-                    // Consecutive Hours Penalty check
-                    if (ruleAvoidConsec) {
-                        const profAssignedSameDay = currentSchedule.filter(s => {
-                            const c = state.courses.find(crs => crs.id === s.courseId);
-                            const existingTs = state.timeslots.find(t => t.id === s.timeslotId);
-                            return c.profId === course.profId && daysOverlap(existingTs.days, ts.days);
-                        });
-
-                        profAssignedSameDay.forEach(s => {
-                            const existingTs = state.timeslots.find(t => t.id === s.timeslotId);
-                            const diff = Math.abs(timeToMins(ts.start) - timeToMins(existingTs.end));
-                            if (diff < 30) slotScore -= 15; // Penalty for back-to-back
-                        });
-                    }
-
-                    return { ts, score: slotScore };
-                });
-
-                // Pick best slot (add slight randomness among top ties)
-                scoredSlots.sort((a,b) => b.score - a.score);
-                const chosenTs = scoredSlots[0].ts;
-                score += scoredSlots[0].score;
-
-                currentSchedule.push({ courseId: course.id, timeslotId: chosenTs.id });
-            }
-
-            if (valid && score > bestScore) {
-                bestScore = score;
-                bestSchedule = currentSchedule;
-                bestWarnings = warnings;
-            }
-        }
-
-        renderScheduleOutput(bestSchedule);
-    }
-
-    function renderScheduleOutput(schedule) {
-        const grid = document.getElementById('scheduleGridOutput');
-        const warnContainer = document.getElementById('warningsContainer');
-        grid.innerHTML = '';
-        warnContainer.innerHTML = '';
-
-        if (!schedule) {
-            grid.innerHTML = `<div class="warning-box" style="grid-column: 1/-1;">
-                <h4>⚠️ Scheduling Conflict Error</h4>
-                <p>Unable to generate a valid schedule without hard-constraint overlaps. Try adding more timeslots or adjusting faculty assignments.</p>
-            </div>`;
-            return;
-        }
-
-        state.schedule = schedule;
-
-        // Group by Timeslots
-        state.timeslots.forEach(ts => {
-            const assignedInSlot = schedule.filter(s => s.timeslotId === ts.id);
-            
-            let coursesHtml = '';
-            assignedInSlot.forEach(s => {
-                const course = state.courses.find(c => c.id === s.courseId);
-                const prof = state.faculty.find(f => f.id === course.profId);
-                coursesHtml += `
-                    <div class="course-chip">
-                        <div class="course-chip-title">${course.code}</div>
-                        <div class="course-chip-prof">👤 ${prof ? prof.name : 'TBD'}</div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">CRN</label>
+                        <input type="text" id="course-crn" placeholder="5236" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
                     </div>
-                `;
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Department</label>
+                        <input type="text" id="course-dept" placeholder="Cybersecurity" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Course Title</label>
+                    <input type="text" id="course-title" placeholder="Intro into Cybersecurity" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
+                </div>
+
+                <div class="grid grid-cols-3 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Max Seats</label>
+                        <input type="number" id="course-max-seats" value="25" min="1" max="500" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Credit Hours</label>
+                        <input type="number" id="course-credits" value="3" min="1" max="6" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Modality</label>
+                        <select id="course-modality" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
+                            <option value="GRND">On-Ground (GRND)</option>
+                            <option value="DIST">Distance/Online (DIST)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Preferred Timeslot</label>
+                        <select id="course-timeslot-select" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
+                            <!-- Populated dynamically -->
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Assigned Instructor</label>
+                        <select id="course-instructor-select" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
+                            <!-- Populated dynamically -->
+                        </select>
+                    </div>
+                </div>
+
+                <div class="flex justify-end space-x-3 pt-4 border-t">
+                    <button type="button" onclick="closeCourseModal()" class="px-4 py-2 border border-slate-300 text-slate-600 rounded-lg text-sm font-semibold hover:bg-slate-50">Cancel</button>
+                    <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-semibold">Save Course</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Room Modal -->
+    <div id="room-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden flex justify-center items-center z-50">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
+            <h3 class="text-lg font-bold text-slate-800 mb-4" id="room-modal-title">Add Classroom</h3>
+            <form onsubmit="saveRoom(event)" class="space-y-4">
+                <input type="hidden" id="room-id">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Building & Room Code</label>
+                    <input type="text" id="room-name" placeholder="ECJS214" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Capacity</label>
+                        <input type="number" id="room-capacity" value="30" min="1" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Type</label>
+                        <select id="room-type" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
+                            <option value="Lecture">Lecture</option>
+                            <option value="Lab">Computer Lab</option>
+                            <option value="Seminar">Seminar</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="flex justify-end space-x-3 pt-4 border-t">
+                    <button type="button" onclick="closeRoomModal()" class="px-4 py-2 border border-slate-300 text-slate-600 rounded-lg text-sm font-semibold hover:bg-slate-50">Cancel</button>
+                    <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-semibold">Save Room</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Timeslot Modal -->
+    <div id="timeslot-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden flex justify-center items-center z-50">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
+            <h3 class="text-lg font-bold text-slate-800 mb-4">Add Custom Timeslot</h3>
+            <form onsubmit="saveTimeslot(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Day Pattern</label>
+                    <select id="ts-days" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
+                        <option value="MWF">Monday Wednesday Friday (MWF)</option>
+                        <option value="MF">Monday Friday (MF)</option>
+                        <option value="TR">Tuesday Thursday (TR)</option>
+                        <option value="M">Monday (M)</option>
+                        <option value="T">Tuesday (T)</option>
+                        <option value="W">Wednesday (W)</option>
+                        <option value="R">Thursday (R)</option>
+                        <option value="F">Friday (F)</option>
+                    </select>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Start Time (24h)</label>
+                        <input type="time" id="ts-start" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">End Time (24h)</label>
+                        <input type="time" id="ts-end" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
+                    </div>
+                </div>
+                <div class="flex justify-end space-x-3 pt-4 border-t">
+                    <button type="button" onclick="closeTimeslotModal()" class="px-4 py-2 border border-slate-300 text-slate-600 rounded-lg text-sm font-semibold hover:bg-slate-50">Cancel</button>
+                    <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-semibold">Save Timeslot</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT APPLICATION LOGIC -->
+    <script>
+        // --- INITIAL STATE ---
+
+        // Exact Default Timeslots as requested
+        let timeslots = [
+            // MWF
+            { id: 'ts-mwf-1', days: 'MWF', start: '08:30', end: '09:20' },
+            { id: 'ts-mwf-2', days: 'MWF', start: '09:30', end: '10:20' },
+            { id: 'ts-mwf-3', days: 'MWF', start: '10:30', end: '11:20' },
+            { id: 'ts-mwf-4', days: 'MWF', start: '11:30', end: '12:20' },
+
+            // MF
+            { id: 'ts-mf-1', days: 'MF', start: '12:30', end: '13:45' },
+            { id: 'ts-mf-2', days: 'MF', start: '14:00', end: '15:15' },
+            { id: 'ts-mf-3', days: 'MF', start: '15:30', end: '16:45' },
+
+            // TR
+            { id: 'ts-tr-1', days: 'TR', start: '08:30', end: '09:45' },
+            { id: 'ts-tr-2', days: 'TR', start: '10:00', end: '11:15' },
+            { id: 'ts-tr-3', days: 'TR', start: '11:30', end: '12:45' },
+            { id: 'ts-tr-4', days: 'TR', start: '13:00', end: '14:15' },
+            { id: 'ts-tr-5', days: 'TR', start: '14:30', end: '15:45' },
+            { id: 'ts-tr-6', days: 'TR', start: '16:00', end: '17:15' }
+        ];
+
+        let facultyList = [];
+        let roomList = [];
+        let courseList = [];
+
+        // --- APP INITIALIZATION ---
+        document.addEventListener('DOMContentLoaded', () => {
+            renderTimeslots();
+            loadSampleData();
+        });
+
+        // --- TAB NAVIGATION ---
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(el => {
+                el.classList.remove('border-indigo-600', 'text-indigo-600');
+                el.classList.add('border-transparent', 'text-slate-500');
             });
 
-            grid.innerHTML += `
-                <div class="slot-card">
-                    <div class="slot-header">
-                        <span>${ts.days} (${ts.start} - ${ts.end})</span>
-                        <span class="status-badge badge-both">${ts.level}</span>
-                    </div>
-                    ${coursesHtml || '<span style="color:#aaa; font-size:11px;">No courses assigned</span>'}
-                </div>
-            `;
-        });
-    }
+            document.getElementById(`content-${tabName}`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`tab-${tabName}`);
+            activeBtn.classList.remove('border-transparent', 'text-slate-500');
+            activeBtn.classList.add('border-indigo-600', 'text-indigo-600');
 
-    // EXPORT & SESSION DATA
-    function exportScheduleCSV() {
-        if (!state.schedule || state.schedule.length === 0) {
-            alert('Please generate a schedule first.');
-            return;
+            if (tabName === 'schedule') renderScheduleGrid();
         }
 
-        let csv = 'Course Code,Level,Instructor,Days,Start Time,End Time\n';
-        state.schedule.forEach(s => {
-            const course = state.courses.find(c => c.id === s.courseId);
-            const prof = state.faculty.find(f => f.id === course.profId);
-            const ts = state.timeslots.find(t => t.id === s.timeslotId);
-            csv += `"${course.code}","${course.level}","${prof ? prof.name : ''}","${ts.days}","${ts.start}","${ts.end}"\n`;
-        });
+        // --- SAMPLE DATA LOAD ---
+        function loadSampleData() {
+            facultyList = [
+                { id: 'f1', bannerId: '2588', firstName: 'Lawrence', lastName: 'Aaronson', maxCourses: 3 },
+                { id: 'f2', bannerId: '3469', firstName: 'Claudette', lastName: 'Abounader', maxCourses: 3 },
+                { id: 'f3', bannerId: '334398', firstName: 'Timothy', lastName: 'Abraham', maxCourses: 2 },
+                { id: 'f4', bannerId: '296782', firstName: 'Joseph', lastName: 'Adamo', maxCourses: 3 }
+            ];
 
-        const blob = new Blob([csv], { type: 'text/csv' });
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = 'Academic_Schedule.csv';
-        a.click();
-    }
+            roomList = [
+                { id: 'r1', name: 'ECJS214', capacity: 34, type: 'Lecture' },
+                { id: 'r2', name: 'ECJS210', capacity: 24, type: 'Lab' },
+                { id: 'r3', name: 'HUB102', capacity: 40, type: 'Lecture' }
+            ];
 
-    function exportJSON() {
-        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state, null, 2));
-        const a = document.createElement('a');
-        a.href = dataStr;
-        a.download = 'Schedule_Session.json';
-        a.click();
-    }
+            courseList = [
+                {
+                    id: 'c1',
+                    crn: '5236',
+                    subj: 'CYB',
+                    num: '101',
+                    section: 'A',
+                    dept: 'Cybersecurity',
+                    title: 'Intro into Cybersecurity',
+                    maxSeats: 25,
+                    credits: 3,
+                    modality: 'GRND',
+                    timeslotId: 'ts-tr-3', // TR 11:30-12:45
+                    assignedRoomId: 'r1',
+                    assignedFacultyId: 'f1'
+                },
+                {
+                    id: 'c2',
+                    crn: '5239',
+                    subj: 'CYB',
+                    num: '101',
+                    section: 'Z1',
+                    dept: 'Cybersecurity',
+                    title: 'Intro into Cybersecurity',
+                    maxSeats: 25,
+                    credits: 3,
+                    modality: 'DIST',
+                    timeslotId: '',
+                    assignedRoomId: '',
+                    assignedFacultyId: 'f1'
+                },
+                {
+                    id: 'c3',
+                    crn: '4513',
+                    subj: 'CYB',
+                    num: '107',
+                    section: 'A',
+                    dept: 'Cybersecurity',
+                    title: 'Comp Hardware & Peripherals',
+                    maxSeats: 24,
+                    credits: 3,
+                    modality: 'GRND',
+                    timeslotId: 'ts-mf-1', // MF 12:30-1:45
+                    assignedRoomId: 'r2',
+                    assignedFacultyId: 'f2'
+                },
+                {
+                    id: 'c4',
+                    crn: '4514',
+                    subj: 'CYB',
+                    num: '107',
+                    section: 'Z1',
+                    dept: 'Cybersecurity',
+                    title: 'Comp Hardware & Peripherals',
+                    maxSeats: 25,
+                    credits: 3,
+                    modality: 'DIST',
+                    timeslotId: '',
+                    assignedRoomId: '',
+                    assignedFacultyId: 'f2'
+                }
+            ];
 
-    function importJSON(event) {
-        const fileReader = new FileReader();
-        fileReader.onload = function(e) {
-            try {
-                state = JSON.parse(e.target.result);
-                renderAll();
-                alert('Session data loaded successfully!');
-            } catch(err) {
-                alert('Invalid JSON file format.');
+            renderFacultyTable();
+            renderRoomTable();
+            renderCourseTable();
+            updateDashboardStats();
+        }
+
+        // --- DASHBOARD METRICS ---
+        function updateDashboardStats() {
+            document.getElementById('stat-total-courses').innerText = courseList.length;
+            const onGround = courseList.filter(c => c.modality === 'GRND').length;
+            const dist = courseList.filter(c => c.modality === 'DIST').length;
+            document.getElementById('stat-courses-breakdown').innerText = `${onGround} On-Ground / ${dist} Online`;
+
+            document.getElementById('stat-total-faculty').innerText = facultyList.length;
+            document.getElementById('stat-total-rooms').innerText = roomList.length;
+        }
+
+        // --- FACULTY MANAGEMENT & FILE UPLOAD ---
+        function renderFacultyTable() {
+            const tbody = document.getElementById('faculty-table-body');
+            tbody.innerHTML = '';
+
+            facultyList.forEach(fac => {
+                const assignedCount = courseList.filter(c => c.assignedFacultyId === fac.id).length;
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-50 transition';
+                tr.innerHTML = `
+                    <td class="p-4 font-mono text-slate-600">${fac.bannerId || '-'}</td>
+                    <td class="p-4 font-medium text-slate-800">${fac.lastName}, ${fac.firstName}</td>
+                    <td class="p-4">
+                        <input type="number" min="1" max="10" value="${fac.maxCourses}" 
+                            onchange="updateFacultyMaxCourses('${fac.id}', this.value)" 
+                            class="w-16 px-2 py-1 border border-slate-300 rounded focus:ring-2 focus:ring-indigo-500 text-sm">
+                    </td>
+                    <td class="p-4">
+                        <span class="px-2.5 py-1 text-xs rounded-full font-semibold ${assignedCount > fac.maxCourses ? 'bg-rose-100 text-rose-700' : 'bg-emerald-100 text-emerald-700'}">
+                            ${assignedCount} / ${fac.maxCourses} Courses
+                        </span>
+                    </td>
+                    <td class="p-4 text-right space-x-2">
+                        <button onclick="editFaculty('${fac.id}')" class="text-indigo-600 hover:text-indigo-800"><i class="fa-solid fa-pen"></i></button>
+                        <button onclick="deleteFaculty('${fac.id}')" class="text-rose-600 hover:text-rose-800"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function updateFacultyMaxCourses(facId, val) {
+            const fac = facultyList.find(f => f.id === facId);
+            if (fac) {
+                fac.maxCourses = parseInt(val) || 3;
+                renderFacultyTable();
             }
-        };
-        fileReader.readAsText(event.target.files[0]);
-    }
+        }
 
-    // INIT PAGE
-    window.onload = function() {
-        renderAll();
-    };
-</script>
+        function importFacultyFile(e) {
+            const file = e.target.files[0];
+            if (!file) return;
 
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                const data = new Uint8Array(evt.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const firstSheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[firstSheetName];
+                const json = XLSX.utils.sheet_to_json(worksheet);
+
+                let added = 0;
+                json.forEach(row => {
+                    const bannerId = row['BANNER ID'] || row['Banner ID'] || row['ID'] || '';
+                    const lastName = row['LAST NAME'] || row['Last Name'] || row['LastName'] || '';
+                    const firstName = row['FIRST NAME'] || row['First Name'] || row['FirstName'] || '';
+
+                    if (lastName || firstName) {
+                        facultyList.push({
+                            id: 'f_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+                            bannerId: String(bannerId).trim(),
+                            firstName: String(firstName).trim(),
+                            lastName: String(lastName).trim(),
+                            maxCourses: 3 // Default manual start capacity
+                        });
+                        added++;
+                    }
+                });
+
+                renderFacultyTable();
+                updateDashboardStats();
+                alert(`Successfully imported ${added} faculty members! Set individual teaching loads as needed.`);
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function openFacultyModal(fac = null) {
+            document.getElementById('faculty-id').value = fac ? fac.id : '';
+            document.getElementById('faculty-banner-id').value = fac ? fac.bannerId : '';
+            document.getElementById('faculty-first-name').value = fac ? fac.firstName : '';
+            document.getElementById('faculty-last-name').value = fac ? fac.lastName : '';
+            document.getElementById('faculty-max-courses').value = fac ? fac.maxCourses : 3;
+            document.getElementById('faculty-modal-title').innerText = fac ? 'Edit Faculty Member' : 'Add Faculty Member';
+            document.getElementById('faculty-modal').classList.remove('hidden');
+        }
+
+        function closeFacultyModal() {
+            document.getElementById('faculty-modal').classList.add('hidden');
+        }
+
+        function saveFaculty(e) {
+            e.preventDefault();
+            const id = document.getElementById('faculty-id').value;
+            const bannerId = document.getElementById('faculty-banner-id').value;
+            const firstName = document.getElementById('faculty-first-name').value;
+            const lastName = document.getElementById('faculty-last-name').value;
+            const maxCourses = parseInt(document.getElementById('faculty-max-courses').value) || 3;
+
+            if (id) {
+                const fac = facultyList.find(f => f.id === id);
+                if (fac) {
+                    fac.bannerId = bannerId;
+                    fac.firstName = firstName;
+                    fac.lastName = lastName;
+                    fac.maxCourses = maxCourses;
+                }
+            } else {
+                facultyList.push({
+                    id: 'f_' + Date.now(),
+                    bannerId, firstName, lastName, maxCourses
+                });
+            }
+
+            closeFacultyModal();
+            renderFacultyTable();
+            updateDashboardStats();
+        }
+
+        function editFaculty(id) {
+            const fac = facultyList.find(f => f.id === id);
+            if (fac) openFacultyModal(fac);
+        }
+
+        function deleteFaculty(id) {
+            if (confirm('Delete this faculty member?')) {
+                facultyList = facultyList.filter(f => f.id !== id);
+                courseList.forEach(c => { if (c.assignedFacultyId === id) c.assignedFacultyId = ''; });
+                renderFacultyTable();
+                renderCourseTable();
+                updateDashboardStats();
+            }
+        }
+
+        // --- COURSE CATALOG & MAX SEATS MANAGEMENT ---
+        function renderCourseTable() {
+            const tbody = document.getElementById('course-table-body');
+            tbody.innerHTML = '';
+
+            courseList.forEach(c => {
+                const fac = facultyList.find(f => f.id === c.assignedFacultyId);
+                const rm = roomList.find(r => r.id === c.assignedRoomId);
+                const ts = timeslots.find(t => t.id === c.timeslotId);
+
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-50 transition';
+                tr.innerHTML = `
+                    <td class="p-4 font-mono font-semibold text-indigo-900">${c.subj} ${c.num} (${c.crn || 'N/A'})</td>
+                    <td class="p-4 font-medium text-slate-800">${c.title}</td>
+                    <td class="p-4 font-mono text-slate-600">${c.section}</td>
+                    <td class="p-4 font-bold text-slate-700">${c.maxSeats}</td>
+                    <td class="p-4">
+                        <span class="px-2 py-0.5 rounded text-xs font-semibold ${c.modality === 'GRND' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'}">
+                            ${c.modality}
+                        </span>
+                    </td>
+                    <td class="p-4 text-xs font-mono">${ts ? `${ts.days} ${formatBannerTime(ts.start)}-${formatBannerTime(ts.end)}` : (c.modality === 'DIST' ? 'Online' : 'Unassigned')}</td>
+                    <td class="p-4 text-xs font-semibold">${rm ? rm.name : (c.modality === 'DIST' ? 'ONLINE' : 'Unassigned')}</td>
+                    <td class="p-4 text-xs font-medium">${fac ? `${fac.lastName}, ${fac.firstName}` : '-'}</td>
+                    <td class="p-4 text-right space-x-2">
+                        <button onclick="editCourse('${c.id}')" class="text-indigo-600 hover:text-indigo-800"><i class="fa-solid fa-pen"></i></button>
+                        <button onclick="deleteCourse('${c.id}')" class="text-rose-600 hover:text-rose-800"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function openCourseModal(crs = null) {
+            document.getElementById('course-id').value = crs ? crs.id : '';
+            document.getElementById('course-crn').value = crs ? crs.crn : '';
+            document.getElementById('course-subj').value = crs ? crs.subj : '';
+            document.getElementById('course-num').value = crs ? crs.num : '';
+            document.getElementById('course-section').value = crs ? crs.section : '';
+            document.getElementById('course-dept').value = crs ? crs.dept : '';
+            document.getElementById('course-title').value = crs ? crs.title : '';
+            document.getElementById('course-max-seats').value = crs ? crs.maxSeats : 25;
+            document.getElementById('course-credits').value = crs ? crs.credits : 3;
+            document.getElementById('course-modality').value = crs ? crs.modality : 'GRND';
+
+            // Populate Dropdowns
+            const tsSelect = document.getElementById('course-timeslot-select');
+            tsSelect.innerHTML = '<option value="">-- Select Timeslot --</option>';
+            timeslots.forEach(ts => {
+                tsSelect.innerHTML += `<option value="${ts.id}">${ts.days} ${formatBannerTime(ts.start)} - ${formatBannerTime(ts.end)}</option>`;
+            });
+            tsSelect.value = crs ? crs.timeslotId : '';
+
+            const facSelect = document.getElementById('course-instructor-select');
+            facSelect.innerHTML = '<option value="">-- Select Faculty --</option>';
+            facultyList.forEach(fac => {
+                facSelect.innerHTML += `<option value="${fac.id}">${fac.lastName}, ${fac.firstName} (${fac.bannerId})</option>`;
+            });
+            facSelect.value = crs ? crs.assignedFacultyId : '';
+
+            document.getElementById('course-modal-title').innerText = crs ? 'Edit Course' : 'Add Course';
+            document.getElementById('course-modal').classList.remove('hidden');
+        }
+
+        function closeCourseModal() {
+            document.getElementById('course-modal').classList.add('hidden');
+        }
+
+        function saveCourse(e) {
+            e.preventDefault();
+            const id = document.getElementById('course-id').value;
+            const crn = document.getElementById('course-crn').value;
+            const subj = document.getElementById('course-subj').value.toUpperCase();
+            const num = document.getElementById('course-num').value;
+            const section = document.getElementById('course-section').value.toUpperCase();
+            const dept = document.getElementById('course-dept').value;
+            const title = document.getElementById('course-title').value;
+            const maxSeats = parseInt(document.getElementById('course-max-seats').value) || 25;
+            const credits = parseInt(document.getElementById('course-credits').value) || 3;
+            const modality = document.getElementById('course-modality').value;
+            const timeslotId = document.getElementById('course-timeslot-select').value;
+            const assignedFacultyId = document.getElementById('course-instructor-select').value;
+
+            if (id) {
+                const crs = courseList.find(c => c.id === id);
+                if (crs) {
+                    Object.assign(crs, { crn, subj, num, section, dept, title, maxSeats, credits, modality, timeslotId, assignedFacultyId });
+                }
+            } else {
+                courseList.push({
+                    id: 'c_' + Date.now(),
+                    crn, subj, num, section, dept, title, maxSeats, credits, modality, timeslotId, assignedFacultyId,
+                    assignedRoomId: modality === 'DIST' ? '' : (roomList[0] ? roomList[0].id : '')
+                });
+            }
+
+            closeCourseModal();
+            renderCourseTable();
+            updateDashboardStats();
+        }
+
+        function editCourse(id) {
+            const crs = courseList.find(c => c.id === id);
+            if (crs) openCourseModal(crs);
+        }
+
+        function deleteCourse(id) {
+            if (confirm('Delete this course?')) {
+                courseList = courseList.filter(c => c.id !== id);
+                renderCourseTable();
+                updateDashboardStats();
+            }
+        }
+
+        // --- ROOM MANAGEMENT ---
+        function renderRoomTable() {
+            const tbody = document.getElementById('room-table-body');
+            tbody.innerHTML = '';
+
+            roomList.forEach(rm => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-50 transition';
+                tr.innerHTML = `
+                    <td class="p-4 font-bold text-slate-800">${rm.name}</td>
+                    <td class="p-4 text-slate-700">${rm.capacity} Seats</td>
+                    <td class="p-4"><span class="px-2 py-1 bg-slate-100 rounded text-xs text-slate-600 font-semibold">${rm.type}</span></td>
+                    <td class="p-4 text-right space-x-2">
+                        <button onclick="deleteRoom('${rm.id}')" class="text-rose-600 hover:text-rose-800"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function openRoomModal() {
+            document.getElementById('room-name').value = '';
+            document.getElementById('room-capacity').value = 30;
+            document.getElementById('room-modal').classList.remove('hidden');
+        }
+
+        function closeRoomModal() {
+            document.getElementById('room-modal').classList.add('hidden');
+        }
+
+        function saveRoom(e) {
+            e.preventDefault();
+            const name = document.getElementById('room-name').value.toUpperCase();
+            const capacity = parseInt(document.getElementById('room-capacity').value) || 30;
+            const type = document.getElementById('room-type').value;
+
+            roomList.push({ id: 'r_' + Date.now(), name, capacity, type });
+            closeRoomModal();
+            renderRoomTable();
+            updateDashboardStats();
+        }
+
+        function deleteRoom(id) {
+            if (confirm('Delete classroom?')) {
+                roomList = roomList.filter(r => r.id !== id);
+                courseList.forEach(c => { if (c.assignedRoomId === id) c.assignedRoomId = ''; });
+                renderRoomTable();
+                renderCourseTable();
+                updateDashboardStats();
+            }
+        }
+
+        // --- TIMESLOT MANAGEMENT ---
+        function renderTimeslots() {
+            const mwfContainer = document.getElementById('timeslots-mwf-list');
+            const mfContainer = document.getElementById('timeslots-mf-list');
+            const trContainer = document.getElementById('timeslots-tr-list');
+
+            mwfContainer.innerHTML = '';
+            mfContainer.innerHTML = '';
+            trContainer.innerHTML = '';
+
+            timeslots.forEach(ts => {
+                const div = document.createElement('div');
+                div.className = 'flex items-center justify-between p-2 bg-slate-50 border border-slate-200 rounded text-sm font-mono';
+                div.innerHTML = `
+                    <span>${formatBannerTime(ts.start)} - ${formatBannerTime(ts.end)}</span>
+                    <button onclick="deleteTimeslot('${ts.id}')" class="text-rose-500 hover:text-rose-700 text-xs"><i class="fa-solid fa-xmark"></i></button>
+                `;
+
+                if (ts.days === 'MWF') mwfContainer.appendChild(div);
+                else if (ts.days === 'MF') mfContainer.appendChild(div);
+                else if (ts.days === 'TR') trContainer.appendChild(div);
+            });
+        }
+
+        function openTimeslotModal() {
+            document.getElementById('timeslot-modal').classList.remove('hidden');
+        }
+
+        function closeTimeslotModal() {
+            document.getElementById('timeslot-modal').classList.add('hidden');
+        }
+
+        function saveTimeslot(e) {
+            e.preventDefault();
+            const days = document.getElementById('ts-days').value;
+            const start = document.getElementById('ts-start').value;
+            const end = document.getElementById('ts-end').value;
+
+            timeslots.push({ id: 'ts_' + Date.now(), days, start, end });
+            closeTimeslotModal();
+            renderTimeslots();
+        }
+
+        function deleteTimeslot(id) {
+            timeslots = timeslots.filter(t => t.id !== id);
+            courseList.forEach(c => { if (c.timeslotId === id) c.timeslotId = ''; });
+            renderTimeslots();
+            renderCourseTable();
+        }
+
+        // --- AUTOMATIC SCHEDULER ALGORITHM ---
+        function runAutoScheduler() {
+            let assignedCount = 0;
+            let roomIndex = 0;
+
+            courseList.forEach(course => {
+                if (course.modality === 'DIST') {
+                    course.assignedRoomId = '';
+                    course.timeslotId = '';
+                    return;
+                }
+
+                // Assign Room
+                if (!course.assignedRoomId && roomList.length > 0) {
+                    const suitableRoom = roomList.find(r => r.capacity >= course.maxSeats) || roomList[roomIndex % roomList.length];
+                    course.assignedRoomId = suitableRoom.id;
+                    roomIndex++;
+                }
+
+                // Assign Default Timeslot if empty
+                if (!course.timeslotId && timeslots.length > 0) {
+                    course.timeslotId = timeslots[assignedCount % timeslots.length].id;
+                    assignedCount++;
+                }
+            });
+
+            renderCourseTable();
+            renderScheduleGrid();
+            document.getElementById('stat-schedule-status').innerText = 'Generated';
+            document.getElementById('stat-schedule-status').className = 'text-3xl font-extrabold text-emerald-600 mt-2';
+            alert('Schedule generated successfully with optimized timeslot & room assignments!');
+        }
+
+        // --- SCHEDULE GRID DISPLAY ---
+        function renderScheduleGrid() {
+            const tbody = document.getElementById('schedule-grid-body');
+            tbody.innerHTML = '';
+
+            timeslots.forEach(ts => {
+                const coursesInSlot = courseList.filter(c => c.timeslotId === ts.id);
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-50';
+
+                const courseText = coursesInSlot.map(c => {
+                    const room = roomList.find(r => r.id === c.assignedRoomId);
+                    return `<div><strong>${c.subj} ${c.num}-${c.section}</strong> (${room ? room.name : 'No Room'})</div>`;
+                }).join('') || '<span class="text-slate-400 italic">No Course Assigned</span>';
+
+                const instructorText = coursesInSlot.map(c => {
+                    const fac = facultyList.find(f => f.id === c.assignedFacultyId);
+                    return `<div>${fac ? `${fac.lastName}, ${fac.firstName}` : '-'}</div>`;
+                }).join('') || '-';
+
+                tr.innerHTML = `
+                    <td class="p-3 border font-bold text-indigo-900">${ts.days}</td>
+                    <td class="p-3 border font-mono text-xs">${formatBannerTime(ts.start)} - ${formatBannerTime(ts.end)}</td>
+                    <td class="p-3 border">${courseText}</td>
+                    <td class="p-3 border text-xs">${instructorText}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // --- HELPER: 12-HOUR BANNER TIME FORMATTER ---
+        function formatBannerTime(timeStr) {
+            if (!timeStr) return '';
+            const [hStr, mStr] = timeStr.split(':');
+            let h = parseInt(hStr, 10);
+            const m = parseInt(mStr, 10);
+            const ampm = h >= 12 ? 'PM' : 'AM';
+            h = h % 12;
+            if (h === 0) h = 12;
+            return `${h}:${m < 10 ? '0' : ''}${m}${ampm}`;
+        }
+
+        // --- BANNER OUTPUT.CSV EXPORT ---
+        function exportToBannerCSV() {
+            // Header lines exactly matching output.csv
+            const line1 = "SYRCRLT Schedule Roll Template,202710,Coll Codes: %,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,";
+            const line2 = "School,Do Not Use - Registrars Use,CRN,Status,Dept,Subj,Crse#,Section,Instructor (Primary marked with asterisk),Part Of Term,Campus,Sched Type,Gradable,Grade Mode,Credit Hours,Course Contact Hours,Faculty Contact Hours,Overload Y/N,Overload Amount,FirstTime Online,Engage(Y/N),Writing Intensive(Y/N),Fees,Max Seats,Enrollment,Waitlist Max,Reserved Seats,Title,Program Restrictions,Majr Restrictions,Campus Restrictions,Level Restrictions,Class Restrictions,Cross Listed With,Meet Days,Meet Begin Time,Meet End Time,Meet Building and Room,Room Capacity,Section Comments,Additional Comments,Modality(Attribute),Modality(Title)";
+
+            const rows = [line1, line2];
+
+            courseList.forEach(c => {
+                const fac = facultyList.find(f => f.id === c.assignedFacultyId);
+                const rm = roomList.find(r => r.id === c.assignedRoomId);
+                const ts = timeslots.find(t => t.id === c.timeslotId);
+
+                const isOnline = c.modality === 'DIST';
+
+                const school = "Business and Justice Studies";
+                const registrarUse = "";
+                const crn = c.crn || "";
+                const status = "Active";
+                const dept = c.dept || "";
+                const subj = c.subj || "";
+                const crseNum = c.num || "";
+                const section = c.section || "";
+                const instructor = fac ? `${fac.lastName}, ${fac.firstName}*` : "- ";
+                const partOfTerm = isOnline ? "D3" : "1";
+                const campus = isOnline ? "D" : "U";
+                const schedType = isOnline ? "Z" : "A";
+                const gradable = "Y";
+                const gradeMode = "S";
+                const creditHours = c.credits || 3;
+                const courseContactHours = c.credits || 3;
+                const facultyContactHours = "";
+                const overloadYN = "";
+                const overloadAmount = "";
+                const firstTimeOnline = "";
+                const engageYN = "N";
+                const writingIntensive = "N";
+                const fees = ""; // Left blank as requested
+                const maxSeats = c.maxSeats || 25;
+                const enrollment = 0;
+                const waitlistMax = isOnline ? 2997 : 999;
+                const reservedSeats = "";
+                const title = c.title || "";
+                const progRestr = "";
+                const majrRestr = "";
+                const campusRestr = "";
+                const levelRestr = "";
+                const classRestr = "";
+                const crossListed = "";
+                const meetDays = (ts && !isOnline) ? ts.days : "";
+                const meetBegin = (ts && !isOnline) ? formatBannerTime(ts.start) : "";
+                const meetEnd = (ts && !isOnline) ? formatBannerTime(ts.end) : "";
+                const meetRoom = isOnline ? "ONLINE" : (rm ? rm.name : "");
+                const roomCap = (rm && !isOnline) ? rm.capacity : "";
+                const secComments = "";
+                const addComments = "";
+                const modalityAttr = isOnline ? "DIST" : "GRND";
+                const modalityTitle = isOnline ? "(OL)" : "(OG)";
+
+                const rowValues = [
+                    school, registrarUse, crn, status, dept, subj, crseNum, section,
+                    instructor, partOfTerm, campus, schedType, gradable, gradeMode,
+                    creditHours, courseContactHours, facultyContactHours, overloadYN,
+                    overloadAmount, firstTimeOnline, engageYN, writingIntensive, fees,
+                    maxSeats, enrollment, waitlistMax, reservedSeats, title, progRestr,
+                    majrRestr, campusRestr, levelRestr, classRestr, crossListed,
+                    meetDays, meetBegin, meetEnd, meetRoom, roomCap, secComments,
+                    addComments, modalityAttr, modalityTitle
+                ];
+
+                const formattedRow = rowValues.map(v => {
+                    const str = String(v === null || v === undefined ? "" : v);
+                    if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+                        return `"${str.replace(/"/g, '""')}"`;
+                    }
+                    return str;
+                }).join(',');
+
+                rows.push(formattedRow);
+            });
+
+            const csvContent = "data:text/csv;charset=utf-8," + encodeURIComponent(rows.join("\n"));
+            const link = document.createElement("a");
+            link.setAttribute("href", csvContent);
+            link.setAttribute("download", "output.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    </script>
 </body>
 </html>
