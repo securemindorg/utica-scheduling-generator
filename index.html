@@ -92,7 +92,7 @@
             <div class="bg-indigo-50 border border-indigo-100 rounded-xl p-6 flex flex-col md:flex-row items-center justify-between">
                 <div>
                     <h2 class="text-lg font-bold text-indigo-900">Banner Schedule Roll Setup Ready</h2>
-                    <p class="text-sm text-indigo-700 mt-1">Upload faculty Excel files, manage max seats, customize default MWF/MF/TR timeslots, and export to Banner format.</p>
+                    <p class="text-sm text-indigo-700 mt-1">Upload your department Excel schedule template, manage max seats, customize default timeslots, and export to Banner format.</p>
                 </div>
                 <div class="mt-4 md:mt-0 flex space-x-3">
                     <button onclick="loadSampleData()" class="bg-white border border-indigo-300 text-indigo-700 hover:bg-indigo-100 font-semibold px-4 py-2 rounded-lg text-sm shadow-sm transition">
@@ -113,7 +113,6 @@
                     <p class="text-sm text-slate-500">Upload Banner ID spreadsheets or add faculty members manually.</p>
                 </div>
                 <div class="flex space-x-3">
-                    <!-- File Upload Input -->
                     <label class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-4 py-2 rounded-lg shadow text-sm cursor-pointer flex items-center space-x-2 transition">
                         <i class="fa-solid fa-file-excel"></i>
                         <span>Import Excel / CSV</span>
@@ -148,11 +147,19 @@
             <div class="flex justify-between items-center">
                 <div>
                     <h2 class="text-xl font-bold text-slate-800">Course Catalog</h2>
-                    <p class="text-sm text-slate-500">Configure department courses, section capacity (Max Seats), and modality.</p>
+                    <p class="text-sm text-slate-500">Upload your department schedule spreadsheet or configure courses manually.</p>
                 </div>
-                <button onclick="openCourseModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-4 py-2 rounded-lg shadow text-sm flex items-center space-x-2 transition">
-                    <i class="fa-solid fa-plus"></i><span>Add Course</span>
-                </button>
+                <div class="flex space-x-3">
+                    <!-- NEW: Master Schedule Spreadsheet Upload Button -->
+                    <label class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-4 py-2 rounded-lg shadow text-sm cursor-pointer flex items-center space-x-2 transition">
+                        <i class="fa-solid fa-file-excel"></i>
+                        <span>Upload Schedule Spreadsheet (.xlsx)</span>
+                        <input type="file" id="schedule-file-input" accept=".xlsx, .xls" class="hidden" onchange="importMasterScheduleFile(event)">
+                    </label>
+                    <button onclick="openCourseModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-4 py-2 rounded-lg shadow text-sm flex items-center space-x-2 transition">
+                        <i class="fa-solid fa-plus"></i><span>Add Course</span>
+                    </button>
+                </div>
             </div>
 
             <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
@@ -473,7 +480,6 @@
     <script>
         // --- INITIAL STATE ---
 
-        // Exact Default Timeslots as requested
         let timeslots = [
             // MWF
             { id: 'ts-mwf-1', days: 'MWF', start: '08:30', end: '09:20' },
@@ -531,66 +537,36 @@
             ];
 
             roomList = [
-                { id: 'r1', name: 'ECJS214', capacity: 34, type: 'Lecture' },
-                { id: 'r2', name: 'ECJS210', capacity: 24, type: 'Lab' },
-                { id: 'r3', name: 'HUB102', capacity: 40, type: 'Lecture' }
+                { id: 'r1', name: 'FAC101', capacity: 40, type: 'Lecture' },
+                { id: 'r2', name: 'HUBBAR108', capacity: 32, type: 'Lecture' },
+                { id: 'r3', name: 'ECJS210', capacity: 24, type: 'Lab' }
             ];
 
             courseList = [
                 {
                     id: 'c1',
-                    crn: '5236',
-                    subj: 'CYB',
-                    num: '101',
-                    section: 'A',
-                    dept: 'Cybersecurity',
-                    title: 'Intro into Cybersecurity',
-                    maxSeats: 25,
+                    crn: '1253',
+                    subj: 'ACC',
+                    num: '201',
+                    section: 'B',
+                    dept: 'Accounting',
+                    title: 'Financial Accounting',
+                    maxSeats: 30,
                     credits: 3,
                     modality: 'GRND',
-                    timeslotId: 'ts-tr-3', // TR 11:30-12:45
+                    timeslotId: 'ts-tr-3',
                     assignedRoomId: 'r1',
                     assignedFacultyId: 'f1'
                 },
                 {
                     id: 'c2',
-                    crn: '5239',
-                    subj: 'CYB',
-                    num: '101',
+                    crn: '3087',
+                    subj: 'ACC',
+                    num: '202',
                     section: 'Z1',
-                    dept: 'Cybersecurity',
-                    title: 'Intro into Cybersecurity',
-                    maxSeats: 25,
-                    credits: 3,
-                    modality: 'DIST',
-                    timeslotId: '',
-                    assignedRoomId: '',
-                    assignedFacultyId: 'f1'
-                },
-                {
-                    id: 'c3',
-                    crn: '4513',
-                    subj: 'CYB',
-                    num: '107',
-                    section: 'A',
-                    dept: 'Cybersecurity',
-                    title: 'Comp Hardware & Peripherals',
-                    maxSeats: 24,
-                    credits: 3,
-                    modality: 'GRND',
-                    timeslotId: 'ts-mf-1', // MF 12:30-1:45
-                    assignedRoomId: 'r2',
-                    assignedFacultyId: 'f2'
-                },
-                {
-                    id: 'c4',
-                    crn: '4514',
-                    subj: 'CYB',
-                    num: '107',
-                    section: 'Z1',
-                    dept: 'Cybersecurity',
-                    title: 'Comp Hardware & Peripherals',
-                    maxSeats: 25,
+                    dept: 'Accounting',
+                    title: 'Managerial Accounting',
+                    maxSeats: 29,
                     credits: 3,
                     modality: 'DIST',
                     timeslotId: '',
@@ -603,6 +579,169 @@
             renderRoomTable();
             renderCourseTable();
             updateDashboardStats();
+        }
+
+        // --- MASTER SCHEDULE SPREADSHEET PARSER (NEW) ---
+        function importMasterScheduleFile(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                try {
+                    const data = new Uint8Array(evt.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    
+                    // Look for the master sheet ('ALL 202710') or fallback to the first sheet
+                    let targetSheetName = workbook.SheetNames.includes('ALL 202710') ? 'ALL 202710' : workbook.SheetNames[0];
+                    let worksheet = workbook.Sheets[targetSheetName];
+
+                    // Read rows with row 1 (index 1) as headers based on your template structure
+                    const json = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                    
+                    if (json.length < 2) {
+                        alert("The uploaded spreadsheet appears to be empty or formatted incorrectly.");
+                        return;
+                    }
+
+                    // Find header index (row containing 'CRN' and 'Subj')
+                    let headerRowIdx = 0;
+                    for (let i = 0; i < Math.min(json.length, 5); i++) {
+                        const rowStr = JSON.stringify(json[i]);
+                        if (rowStr.includes('CRN') && rowStr.includes('Subj')) {
+                            headerRowIdx = i;
+                            break;
+                        }
+                    }
+
+                    const headers = json[headerRowIdx];
+                    const getColIdx = (name) => headers.findIndex(h => h && h.toString().trim().toLowerCase() === name.toLowerCase());
+
+                    const crnIdx = headers.findIndex(h => h && h.toString().trim() === 'CRN');
+                    const deptIdx = headers.findIndex(h => h && h.toString().trim().toLowerCase() === 'dept');
+                    const subjIdx = headers.findIndex(h => h && h.toString().trim().toLowerCase() === 'subj');
+                    const crseNumIdx = headers.findIndex(h => h && h.toString().trim().toLowerCase().includes('crse'));
+                    const sectionIdx = headers.findIndex(h => h && h.toString().trim().toLowerCase() === 'section');
+                    const titleIdx = headers.findIndex(h => h && h.toString().trim().toLowerCase() === 'title');
+                    const maxSeatsIdx = headers.findIndex(h => h && h.toString().trim().toLowerCase().includes('max seats'));
+                    const creditsIdx = headers.findIndex(h => h && h.toString().trim().toLowerCase().includes('credit hours'));
+                    const modalityAttrIdx = headers.findIndex(h => h && h.toString().trim().toLowerCase().includes('modality(attribute)'));
+                    const meetDaysIdx = headers.findIndex(h => h && h.toString().trim().toLowerCase().includes('meet days'));
+                    const meetBeginIdx = headers.findIndex(h => h && h.toString().trim().toLowerCase().includes('meet begin time'));
+                    const meetEndIdx = headers.findIndex(h => h && h.toString().trim().toLowerCase().includes('meet end time'));
+                    const meetRoomIdx = headers.findIndex(h => h && h.toString().trim().toLowerCase().includes('meet building and room'));
+
+                    let importedCoursesCount = 0;
+                    let detectedRooms = new Set(roomList.map(r => r.name));
+
+                    for (let i = headerRowIdx + 1; i < json.length; i++) {
+                        const row = json[i];
+                        if (!row || row.length === 0) continue;
+
+                        const subj = subjIdx !== -1 ? String(row[subjIdx] || '').trim() : '';
+                        const crseNum = crseNumIdx !== -1 ? String(row[crseNumIdx] || '').trim() : '';
+                        
+                        if (!subj || !crseNum) continue; // Skip invalid rows
+
+                        const crn = crnIdx !== -1 ? String(row[crnIdx] || '').trim() : '';
+                        const dept = deptIdx !== -1 ? String(row[deptIdx] || '').trim() : 'General';
+                        const section = sectionIdx !== -1 ? String(row[sectionIdx] || '').trim() : 'A';
+                        const title = titleIdx !== -1 ? String(row[titleIdx] || '').trim() : 'Untitled Course';
+                        const maxSeats = maxSeatsIdx !== -1 ? parseInt(row[maxSeatsIdx], 10) || 25 : 25;
+                        const credits = creditsIdx !== -1 ? parseInt(row[creditsIdx], 10) || 3 : 3;
+                        const modalityAttr = modalityAttrIdx !== -1 ? String(row[modalityAttrIdx] || '').trim() : 'GRND';
+                        const modality = modalityAttr.includes('DIST') || modalityAttr.includes('OL') ? 'DIST' : 'GRND';
+                        
+                        const roomName = meetRoomIdx !== -1 ? String(row[meetRoomIdx] || '').trim() : '';
+                        const meetDays = meetDaysIdx !== -1 ? String(row[meetDaysIdx] || '').trim() : '';
+                        const meetBegin = meetBeginIdx !== -1 ? String(row[meetBeginIdx] || '').trim() : '';
+                        const meetEnd = meetEndIdx !== -1 ? String(row[meetEndIdx] || '').trim() : '';
+
+                        // Automatically add new rooms if found in the file
+                        let assignedRoomId = '';
+                        if (roomName && roomName !== 'ONLINE') {
+                            let existingRoom = roomList.find(r => r.name.toLowerCase() === roomName.toLowerCase());
+                            if (!existingRoom) {
+                                const newRoomId = 'r_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
+                                roomList.push({
+                                    id: newRoomId,
+                                    name: roomName,
+                                    capacity: maxSeats + 5,
+                                    type: 'Lecture'
+                                });
+                                assignedRoomId = newRoomId;
+                            } else {
+                                assignedRoomId = existingRoom.id;
+                            }
+                        }
+
+                        // Match timeslot if meeting days and times are provided
+                        let matchedTimeslotId = '';
+                        if (meetDays && meetBegin && meetEnd) {
+                            let cleanBegin = convertTo24Hour(meetBegin);
+                            let cleanEnd = convertTo24Hour(meetEnd);
+                            let foundTs = timeslots.find(t => t.days === meetDays && t.start === cleanBegin);
+                            if (foundTs) {
+                                matchedTimeslotId = foundTs.id;
+                            } else {
+                                // Add custom timeslot dynamically if not already present
+                                const newTsId = 'ts_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
+                                timeslots.push({
+                                    id: newTsId,
+                                    days: meetDays,
+                                    start: cleanBegin || '08:30',
+                                    end: cleanEnd || '09:45'
+                                });
+                                matchedTimeslotId = newTsId;
+                            }
+                        }
+
+                        // Add course to catalog
+                        courseList.push({
+                            id: 'c_' + Date.now() + '_' + importedCoursesCount,
+                            crn,
+                            subj,
+                            num: crseNum,
+                            section,
+                            dept,
+                            title,
+                            maxSeats,
+                            credits,
+                            modality,
+                            timeslotId: matchedTimeslotId,
+                            assignedRoomId: modality === 'DIST' ? '' : assignedRoomId,
+                            assignedFacultyId: ''
+                        });
+
+                        importedCoursesCount++;
+                    }
+
+                    renderCourseTable();
+                    renderRoomTable();
+                    renderTimeslots();
+                    updateDashboardStats();
+                    alert(`Successfully imported ${importedCoursesCount} courses and updated the Course Catalog tab from the uploaded spreadsheet!`);
+                } catch (err) {
+                    console.error(err);
+                    alert("Error parsing spreadsheet file. Please make sure it matches the Banner Schedule Roll template format.");
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        // Helper to convert 12hr time string (e.g., '2:30PM') to 24hr ('14:30') for internal timeslot tracking
+        function convertTo24Hour(timeStr) {
+            if (!timeStr) return '';
+            let upper = timeStr.toUpperCase().trim();
+            let isPM = upper.includes('PM');
+            let isAM = upper.includes('AM');
+            let clean = upper.replace('PM', '').replace('AM', '').trim();
+            let parts = clean.split(':');
+            let h = parseInt(parts[0], 10) || 0;
+            let m = parts[1] ? parseInt(parts[1], 10) || 0 : 0;
+            if (isPM && h < 12) h += 12;
+            if (isAM && h === 12) h = 0;
+            return `${h < 10 ? '0' : ''}${h}:${m < 10 ? '0' : ''}${m}`;
         }
 
         // --- DASHBOARD METRICS ---
@@ -679,7 +818,7 @@
                             bannerId: String(bannerId).trim(),
                             firstName: String(firstName).trim(),
                             lastName: String(lastName).trim(),
-                            maxCourses: 3 // Default manual start capacity
+                            maxCourses: 3
                         });
                         added++;
                     }
@@ -687,7 +826,7 @@
 
                 renderFacultyTable();
                 updateDashboardStats();
-                alert(`Successfully imported ${added} faculty members! Set individual teaching loads as needed.`);
+                alert(`Successfully imported ${added} faculty members!`);
             };
             reader.readAsArrayBuffer(file);
         }
@@ -723,10 +862,7 @@
                     fac.maxCourses = maxCourses;
                 }
             } else {
-                facultyList.push({
-                    id: 'f_' + Date.now(),
-                    bannerId, firstName, lastName, maxCourses
-                });
+                facultyList.push({ id: 'f_' + Date.now(), bannerId, firstName, lastName, maxCourses });
             }
 
             closeFacultyModal();
@@ -795,7 +931,6 @@
             document.getElementById('course-credits').value = crs ? crs.credits : 3;
             document.getElementById('course-modality').value = crs ? crs.modality : 'GRND';
 
-            // Populate Dropdowns
             const tsSelect = document.getElementById('course-timeslot-select');
             tsSelect.innerHTML = '<option value="">-- Select Timeslot --</option>';
             timeslots.forEach(ts => {
@@ -978,14 +1113,12 @@
                     return;
                 }
 
-                // Assign Room
                 if (!course.assignedRoomId && roomList.length > 0) {
                     const suitableRoom = roomList.find(r => r.capacity >= course.maxSeats) || roomList[roomIndex % roomList.length];
                     course.assignedRoomId = suitableRoom.id;
                     roomIndex++;
                 }
 
-                // Assign Default Timeslot if empty
                 if (!course.timeslotId && timeslots.length > 0) {
                     course.timeslotId = timeslots[assignedCount % timeslots.length].id;
                     assignedCount++;
@@ -1032,9 +1165,14 @@
         // --- HELPER: 12-HOUR BANNER TIME FORMATTER ---
         function formatBannerTime(timeStr) {
             if (!timeStr) return '';
-            const [hStr, mStr] = timeStr.split(':');
+            let cleanTime = timeStr.trim();
+            // If already contains AM/PM format
+            if (cleanTime.toUpperCase().includes('AM') || cleanTime.toUpperCase().includes('PM')) {
+                return cleanTime;
+            }
+            const [hStr, mStr] = cleanTime.split(':');
             let h = parseInt(hStr, 10);
-            const m = parseInt(mStr, 10);
+            const m = parseInt(mStr, 10) || 0;
             const ampm = h >= 12 ? 'PM' : 'AM';
             h = h % 12;
             if (h === 0) h = 12;
@@ -1043,7 +1181,6 @@
 
         // --- BANNER OUTPUT.CSV EXPORT ---
         function exportToBannerCSV() {
-            // Header lines exactly matching output.csv
             const line1 = "SYRCRLT Schedule Roll Template,202710,Coll Codes: %,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,";
             const line2 = "School,Do Not Use - Registrars Use,CRN,Status,Dept,Subj,Crse#,Section,Instructor (Primary marked with asterisk),Part Of Term,Campus,Sched Type,Gradable,Grade Mode,Credit Hours,Course Contact Hours,Faculty Contact Hours,Overload Y/N,Overload Amount,FirstTime Online,Engage(Y/N),Writing Intensive(Y/N),Fees,Max Seats,Enrollment,Waitlist Max,Reserved Seats,Title,Program Restrictions,Majr Restrictions,Campus Restrictions,Level Restrictions,Class Restrictions,Cross Listed With,Meet Days,Meet Begin Time,Meet End Time,Meet Building and Room,Room Capacity,Section Comments,Additional Comments,Modality(Attribute),Modality(Title)";
 
@@ -1078,7 +1215,7 @@
                 const firstTimeOnline = "";
                 const engageYN = "N";
                 const writingIntensive = "N";
-                const fees = ""; // Left blank as requested
+                const fees = "";
                 const maxSeats = c.maxSeats || 25;
                 const enrollment = 0;
                 const waitlistMax = isOnline ? 2997 : 999;
