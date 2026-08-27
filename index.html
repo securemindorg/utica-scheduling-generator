@@ -29,15 +29,22 @@
                 </div>
             </div>
             
-            <!-- Header Action Controls & GitHub Link -->
+            <!-- Header Action Controls -->
             <div class="flex flex-wrap items-center gap-2">
                 <a href="https://github.com/securemindorg/utica-scheduling-generator/blob/main/index.html" 
                    target="_blank" 
                    rel="noopener noreferrer" 
-                   class="bg-slate-900/80 hover:bg-black text-slate-100 border border-slate-700/80 font-semibold px-3.5 py-2 rounded-lg shadow-md flex items-center space-x-2 transition text-xs hover:border-slate-500 group">
-                    <i class="fa-brands fa-github text-lg text-white group-hover:scale-110 transition-transform"></i>
-                    <span>View README & Codebase</span>
+                   class="bg-slate-900/80 hover:bg-black text-slate-100 border border-slate-700/80 font-semibold px-3 py-2 rounded-lg shadow-md flex items-center space-x-2 transition text-xs hover:border-slate-500 group">
+                    <i class="fa-brands fa-github text-base text-white group-hover:scale-110 transition-transform"></i>
+                    <span>README</span>
                 </a>
+                
+                <label class="bg-amber-600 hover:bg-amber-700 text-white font-semibold px-3.5 py-2 rounded-lg shadow-md flex items-center space-x-2 transition text-xs cursor-pointer">
+                    <i class="fa-solid fa-file-import"></i>
+                    <span>Load Changes (.xlsx)</span>
+                    <input type="file" accept=".xlsx, .xls" class="hidden" onchange="importChangesFile(event)">
+                </label>
+
                 <button onclick="exportModifiedExcel()" class="bg-[#E85E26] hover:bg-[#d14f1d] text-white font-bold px-4 py-2 rounded-lg shadow-md flex items-center space-x-2 transition text-sm">
                     <i class="fa-solid fa-file-excel"></i>
                     <span>Export Changes Only (.xlsx)</span>
@@ -81,7 +88,7 @@
     <!-- Main Content Area -->
     <main class="max-w-7xl mx-auto px-4 py-6 flex-grow w-full">
 
-        <!-- DASHBOARD / LANDING SCREEN TAB -->
+        <!-- DASHBOARD TAB -->
         <section id="content-dashboard" class="tab-content space-y-6">
 
             <!-- Metrics Overview Grid -->
@@ -113,43 +120,52 @@
                 </div>
             </div>
 
-            <!-- Primary Landing Screen Upload & Quick Actions Hero -->
+            <!-- Dashboard Upload Hero -->
             <div class="bg-gradient-to-br from-[#002D62] via-[#001D42] to-[#0A3C7D] rounded-2xl shadow-lg p-6 md:p-8 text-white relative overflow-hidden border-l-8 border-[#E85E26]">
-                <div class="relative z-10 max-w-3xl">
+                <div class="relative z-10 max-w-4xl">
                     <span class="inline-block bg-[#E85E26] text-white text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full mb-3 shadow">
-                        Semester Schedule Import
+                        Workflow Stage 1, 2 & 3
                     </span>
-                    <h2 class="text-2xl md:text-3xl font-extrabold tracking-tight">Load Previous Semester Schedule</h2>
+                    <h2 class="text-2xl md:text-3xl font-extrabold tracking-tight">Schedule & Saved Changes Management</h2>
                     <p class="text-slate-200 text-sm md:text-base mt-2 leading-relaxed">
-                        Import your Banner export spreadsheet (<code class="bg-black/30 px-1.5 py-0.5 rounded text-amber-300">.xlsx</code>) from previous terms. The system will automatically parse courses, assigned faculty, timeslots, rooms, modality, and max seat limits.
+                        Import your previous term schedule spreadsheet, upload your updated faculty roster, and apply any saved change files (<code class="bg-black/30 px-1.5 py-0.5 rounded text-amber-300">.xlsx</code>) to resume editing at any time.
                     </p>
 
-                    <!-- File Drop / Upload Box -->
-                    <div class="mt-6 flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
-                        <label class="flex-grow bg-white/10 hover:bg-white/20 border-2 border-dashed border-amber-400/50 hover:border-amber-400 rounded-xl p-4 cursor-pointer transition flex items-center justify-center space-x-3 text-center group">
+                    <!-- File Drop / Upload Grid -->
+                    <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <label class="bg-white/10 hover:bg-white/20 border-2 border-dashed border-amber-400/50 hover:border-amber-400 rounded-xl p-4 cursor-pointer transition flex items-center space-x-3 text-left group">
                             <i class="fa-solid fa-file-excel text-3xl text-emerald-400 group-hover:scale-110 transition"></i>
-                            <div class="text-left">
-                                <p class="text-sm font-bold text-white">Click to Select or Drop Semester Excel File (.xlsx)</p>
-                                <p class="text-xs text-slate-300">Supports Banner Schedule Roll Exports (e.g. BJS-syrcrlt-202710)</p>
+                            <div>
+                                <p class="text-sm font-bold text-white">1. Load Semester Schedule (.xlsx)</p>
+                                <p class="text-xs text-slate-300">Import Banner schedule roll export</p>
                             </div>
                             <input type="file" accept=".xlsx, .xls" class="hidden" onchange="importMasterScheduleFile(event)">
                         </label>
 
-                        <div class="flex flex-col gap-2">
-                            <button onclick="loadSampleData()" class="bg-white/10 hover:bg-white/20 text-white border border-white/30 font-semibold px-4 py-2.5 rounded-xl text-xs transition flex items-center justify-center space-x-2">
-                                <i class="fa-solid fa-rotate-left text-amber-300"></i>
-                                <span>Reset / Load Sample</span>
-                            </button>
-                            <button onclick="exportModifiedExcel()" class="bg-[#E85E26] hover:bg-[#d14f1d] text-white font-bold px-4 py-2.5 rounded-xl text-xs transition shadow flex items-center justify-center space-x-2">
-                                <i class="fa-solid fa-file-export"></i>
-                                <span>Export Changes (.xlsx)</span>
-                            </button>
-                        </div>
+                        <label class="bg-white/10 hover:bg-white/20 border-2 border-dashed border-amber-400/50 hover:border-amber-400 rounded-xl p-4 cursor-pointer transition flex items-center space-x-3 text-left group">
+                            <i class="fa-solid fa-file-import text-3xl text-amber-400 group-hover:scale-110 transition"></i>
+                            <div>
+                                <p class="text-sm font-bold text-white">3. Load Saved Changes (.xlsx)</p>
+                                <p class="text-xs text-slate-300">Resume editing from previous session</p>
+                            </div>
+                            <input type="file" accept=".xlsx, .xls" class="hidden" onchange="importChangesFile(event)">
+                        </label>
+                    </div>
+
+                    <div class="mt-4 flex flex-wrap gap-2 justify-end">
+                        <button onclick="loadSampleData()" class="bg-white/10 hover:bg-white/20 text-white border border-white/30 font-semibold px-4 py-2 rounded-xl text-xs transition flex items-center space-x-2">
+                            <i class="fa-solid fa-rotate-left text-amber-300"></i>
+                            <span>Reset / Load Sample</span>
+                        </button>
+                        <button onclick="exportModifiedExcel()" class="bg-[#E85E26] hover:bg-[#d14f1d] text-white font-bold px-4 py-2 rounded-xl text-xs transition shadow flex items-center space-x-2">
+                            <i class="fa-solid fa-file-export"></i>
+                            <span>Export Changes (.xlsx)</span>
+                        </button>
                     </div>
                 </div>
             </div>
 
-            <!-- Dashboard Recent Activity / Modified List Preview -->
+            <!-- Dashboard Recent Activity -->
             <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
                 <div class="flex justify-between items-center mb-4">
                     <div>
@@ -167,7 +183,7 @@
 
         </section>
 
-        <!-- COURSE CATALOG TAB WITH MAJOR CODE FILTER -->
+        <!-- COURSE CATALOG TAB -->
         <section id="content-courses" class="tab-content hidden space-y-6">
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
@@ -177,8 +193,13 @@
                 <div class="flex flex-wrap items-center gap-2">
                     <label class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-3 py-2 rounded-lg shadow text-xs cursor-pointer flex items-center space-x-2 transition">
                         <i class="fa-solid fa-file-excel"></i>
-                        <span>Upload (.xlsx)</span>
+                        <span>Upload Schedule (.xlsx)</span>
                         <input type="file" accept=".xlsx, .xls" class="hidden" onchange="importMasterScheduleFile(event)">
+                    </label>
+                    <label class="bg-amber-600 hover:bg-amber-700 text-white font-semibold px-3 py-2 rounded-lg shadow text-xs cursor-pointer flex items-center space-x-2 transition">
+                        <i class="fa-solid fa-file-import"></i>
+                        <span>Load Changes (.xlsx)</span>
+                        <input type="file" accept=".xlsx, .xls" class="hidden" onchange="importChangesFile(event)">
                     </label>
                     <button onclick="openCourseModal()" class="bg-[#002D62] hover:bg-[#001D42] text-white font-semibold px-3 py-2 rounded-lg shadow text-xs flex items-center space-x-2 transition">
                         <i class="fa-solid fa-plus"></i><span>Add Course</span>
@@ -189,7 +210,6 @@
             <!-- Major Code & Search Filter Bar -->
             <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col md:flex-row gap-4 items-center justify-between">
                 <div class="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
-                    <!-- Major Code Select Filter -->
                     <div class="w-full sm:w-64">
                         <label class="block text-[10px] font-extrabold uppercase text-[#002D62] mb-1">Filter by Major Code</label>
                         <select id="course-filter-major" onchange="filterCourseCatalog()" class="w-full bg-slate-50 border border-slate-300 font-semibold text-slate-800 text-sm rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#E85E26] outline-none">
@@ -197,7 +217,6 @@
                         </select>
                     </div>
 
-                    <!-- Modality Filter -->
                     <div class="w-full sm:w-48">
                         <label class="block text-[10px] font-extrabold uppercase text-[#002D62] mb-1">Modality</label>
                         <select id="course-filter-modality" onchange="filterCourseCatalog()" class="w-full bg-slate-50 border border-slate-300 font-semibold text-slate-800 text-sm rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#E85E26] outline-none">
@@ -208,7 +227,6 @@
                     </div>
                 </div>
 
-                <!-- Text Search -->
                 <div class="w-full md:w-72">
                     <label class="block text-[10px] font-extrabold uppercase text-[#002D62] mb-1">Search Courses</label>
                     <div class="relative">
@@ -326,9 +344,7 @@
                 </button>
             </div>
 
-            <!-- Grid updated to 4 columns on large screens -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                
                 <!-- MWF Card -->
                 <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 border-t-4 border-t-[#002D62]">
                     <div class="flex items-center justify-between border-b pb-3 mb-4">
@@ -376,7 +392,6 @@
                     </div>
                     <div id="timeslots-tr-list" class="space-y-2"></div>
                 </div>
-
             </div>
         </section>
 
@@ -597,24 +612,20 @@
         // --- INITIAL STATE ---
 
         let timeslots = [
-            // MWF
             { id: 'ts-mwf-1', days: 'MWF', start: '08:30', end: '09:20' },
             { id: 'ts-mwf-2', days: 'MWF', start: '09:30', end: '10:20' },
             { id: 'ts-mwf-3', days: 'MWF', start: '10:30', end: '11:20' },
             { id: 'ts-mwf-4', days: 'MWF', start: '11:30', end: '12:20' },
 
-            // MW
             { id: 'ts-mw-1', days: 'MW', start: '08:30', end: '09:45' },
             { id: 'ts-mw-2', days: 'MW', start: '10:00', end: '11:15' },
             { id: 'ts-mw-3', days: 'MW', start: '13:00', end: '14:15' },
             { id: 'ts-mw-4', days: 'MW', start: '14:30', end: '15:45' },
 
-            // MF
             { id: 'ts-mf-1', days: 'MF', start: '12:30', end: '13:45' },
             { id: 'ts-mf-2', days: 'MF', start: '14:00', end: '15:15' },
             { id: 'ts-mf-3', days: 'MF', start: '15:30', end: '16:45' },
 
-            // TR
             { id: 'ts-tr-1', days: 'TR', start: '08:30', end: '09:45' },
             { id: 'ts-tr-2', days: 'TR', start: '10:00', end: '11:15' },
             { id: 'ts-tr-3', days: 'TR', start: '11:30', end: '12:45' },
@@ -760,7 +771,6 @@
                         return;
                     }
 
-                    // Find header row containing 'CRN' and 'Subj'
                     let headerRowIdx = 0;
                     for (let i = 0; i < Math.min(json.length, 10); i++) {
                         const rowStr = JSON.stringify(json[i] || []);
@@ -787,7 +797,7 @@
                     const instructorIdx = headers.findIndex(h => h && h.toString().trim().toLowerCase().includes('instructor'));
 
                     let importedCoursesCount = 0;
-                    courseList = []; // Replace with new semester schedule
+                    courseList = [];
 
                     for (let i = headerRowIdx + 1; i < json.length; i++) {
                         const row = json[i];
@@ -813,7 +823,6 @@
                         const meetEnd = meetEndIdx !== -1 ? String(row[meetEndIdx] || '').trim() : '';
                         const rawInstructor = instructorIdx !== -1 ? String(row[instructorIdx] || '').trim() : '';
 
-                        // Instructor Parsing
                         let assignedFacultyId = '';
                         if (rawInstructor && rawInstructor !== '-' && rawInstructor !== ' - ') {
                             let cleanName = rawInstructor.replace('*', '').trim();
@@ -835,7 +844,6 @@
                             assignedFacultyId = facObj.id;
                         }
 
-                        // Room Parsing
                         let assignedRoomId = '';
                         if (roomName && roomName !== 'ONLINE') {
                             let existingRoom = roomList.find(r => r.name.toLowerCase() === roomName.toLowerCase());
@@ -852,7 +860,6 @@
                             assignedRoomId = existingRoom.id;
                         }
 
-                        // Timeslot Matching
                         let matchedTimeslotId = '';
                         if (meetDays && meetBegin) {
                             let cleanBegin = convertTo24Hour(meetBegin);
@@ -872,7 +879,6 @@
                             }
                         }
 
-                        // Save Course
                         courseList.push({
                             id: 'c_' + Date.now() + '_' + importedCoursesCount,
                             crn,
@@ -907,10 +913,202 @@
                     alert("Error parsing spreadsheet file. Please verify it matches the standard Banner export format.");
                 }
             };
+            e.target.value = '';
             reader.readAsArrayBuffer(file);
         }
 
-        // Helper: Convert 12hr AM/PM string to 24hr format
+        // --- IMPORT SAVED CHANGES (.XLSX) ---
+        function importChangesFile(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                try {
+                    const data = new Uint8Array(evt.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    
+                    let targetSheetName = workbook.SheetNames.includes('Modified Items') ? 'Modified Items' : workbook.SheetNames[0];
+                    let worksheet = workbook.Sheets[targetSheetName];
+
+                    const json = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                    
+                    if (json.length < 2) {
+                        alert("The uploaded change file appears to be empty or missing headers.");
+                        return;
+                    }
+
+                    let headerRowIdx = 0;
+                    for (let i = 0; i < Math.min(json.length, 10); i++) {
+                        const rowStr = JSON.stringify(json[i] || []);
+                        if (rowStr.includes('CRN') || rowStr.includes('Subject') || rowStr.includes('Course Num')) {
+                            headerRowIdx = i;
+                            break;
+                        }
+                    }
+
+                    const headers = json[headerRowIdx].map(h => String(h || '').trim().toLowerCase());
+                    
+                    const crnIdx = headers.findIndex(h => h === 'crn');
+                    const subjIdx = headers.findIndex(h => h.includes('subject') || h === 'subj');
+                    const numIdx = headers.findIndex(h => h.includes('course num') || h.includes('crse') || h === 'num');
+                    const secIdx = headers.findIndex(h => h.includes('section') || h === 'sec');
+                    const titleIdx = headers.findIndex(h => h.includes('title'));
+                    const deptIdx = headers.findIndex(h => h.includes('department') || h === 'dept');
+                    const modalityIdx = headers.findIndex(h => h.includes('modality'));
+                    const maxSeatsIdx = headers.findIndex(h => h.includes('max seats'));
+                    const creditsIdx = headers.findIndex(h => h.includes('credits') || h.includes('credit hours'));
+                    const instructorIdx = headers.findIndex(h => h.includes('instructor'));
+                    const roomIdx = headers.findIndex(h => h.includes('room') || h.includes('building'));
+                    const daysIdx = headers.findIndex(h => h.includes('meeting days') || h.includes('meet days') || h === 'days');
+                    const startIdx = headers.findIndex(h => h.includes('start time') || h.includes('meet begin'));
+                    const endIdx = headers.findIndex(h => h.includes('end time') || h.includes('meet end'));
+
+                    let updatedCount = 0;
+                    let newAddedCount = 0;
+
+                    for (let i = headerRowIdx + 1; i < json.length; i++) {
+                        const row = json[i];
+                        if (!row || row.length === 0) continue;
+
+                        const crn = crnIdx !== -1 ? String(row[crnIdx] || '').trim() : '';
+                        const subj = subjIdx !== -1 ? String(row[subjIdx] || '').trim().toUpperCase() : '';
+                        const num = numIdx !== -1 ? String(row[numIdx] || '').trim() : '';
+                        const section = secIdx !== -1 ? String(row[secIdx] || '').trim().toUpperCase() : 'A';
+
+                        if (!subj && !num && !crn) continue;
+
+                        const title = titleIdx !== -1 ? String(row[titleIdx] || '').trim() : 'Untitled Course';
+                        const dept = deptIdx !== -1 ? String(row[deptIdx] || '').trim() : 'General';
+                        const modality = modalityIdx !== -1 ? (String(row[modalityIdx] || '').trim().toUpperCase().includes('DIST') ? 'DIST' : 'GRND') : 'GRND';
+                        const maxSeats = maxSeatsIdx !== -1 ? parseInt(row[maxSeatsIdx], 10) || 25 : 25;
+                        const credits = creditsIdx !== -1 ? parseInt(row[creditsIdx], 10) || 3 : 3;
+                        
+                        const rawInstructor = instructorIdx !== -1 ? String(row[instructorIdx] || '').trim() : '';
+                        const rawRoom = roomIdx !== -1 ? String(row[roomIdx] || '').trim() : '';
+                        const rawDays = daysIdx !== -1 ? String(row[daysIdx] || '').trim() : '';
+                        const rawStart = startIdx !== -1 ? String(row[startIdx] || '').trim() : '';
+                        const rawEnd = endIdx !== -1 ? String(row[endIdx] || '').trim() : '';
+
+                        let assignedFacultyId = '';
+                        if (rawInstructor && rawInstructor !== 'Unassigned' && rawInstructor !== '-') {
+                            let cleanName = rawInstructor.replace('*', '').trim();
+                            let facObj = facultyList.find(f => 
+                                `${f.lastName}, ${f.firstName}`.toLowerCase() === cleanName.toLowerCase() ||
+                                `${f.firstName} ${f.lastName}`.toLowerCase() === cleanName.toLowerCase()
+                            );
+                            if (!facObj) {
+                                let parts = cleanName.split(',');
+                                let lastName = parts[0] ? parts[0].trim() : cleanName;
+                                let firstName = parts[1] ? parts[1].trim() : '';
+                                facObj = {
+                                    id: 'f_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
+                                    bannerId: 'P' + Math.floor(100000 + Math.random() * 900000),
+                                    firstName,
+                                    lastName,
+                                    maxCourses: 3
+                                };
+                                facultyList.push(facObj);
+                            }
+                            assignedFacultyId = facObj.id;
+                        }
+
+                        let assignedRoomId = '';
+                        if (rawRoom && rawRoom !== 'ONLINE' && rawRoom !== 'Unassigned') {
+                            let existingRoom = roomList.find(r => r.name.toLowerCase() === rawRoom.toLowerCase());
+                            if (!existingRoom) {
+                                existingRoom = {
+                                    id: 'r_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
+                                    name: rawRoom,
+                                    capacity: maxSeats + 5,
+                                    type: 'Lecture'
+                                };
+                                roomList.push(existingRoom);
+                            }
+                            assignedRoomId = existingRoom.id;
+                        }
+
+                        let matchedTimeslotId = '';
+                        if (rawDays && rawStart) {
+                            let cleanBegin = convertTo24Hour(rawStart) || rawStart;
+                            let cleanEnd = convertTo24Hour(rawEnd) || rawEnd;
+                            let foundTs = timeslots.find(t => t.days === rawDays && t.start === cleanBegin);
+                            if (foundTs) {
+                                matchedTimeslotId = foundTs.id;
+                            } else {
+                                const newTsId = 'ts_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
+                                timeslots.push({
+                                    id: newTsId,
+                                    days: rawDays,
+                                    start: cleanBegin,
+                                    end: cleanEnd || '09:45'
+                                });
+                                matchedTimeslotId = newTsId;
+                            }
+                        }
+
+                        let targetCourse = null;
+                        if (crn && crn !== 'TBD') {
+                            targetCourse = courseList.find(c => c.crn === crn);
+                        }
+                        if (!targetCourse && subj && num) {
+                            targetCourse = courseList.find(c => c.subj === subj && c.num === num && (section ? c.section === section : true));
+                        }
+
+                        if (targetCourse) {
+                            if (crn && crn !== 'TBD') targetCourse.crn = crn;
+                            if (subj) targetCourse.subj = subj;
+                            if (num) targetCourse.num = num;
+                            if (section) targetCourse.section = section;
+                            if (title) targetCourse.title = title;
+                            if (dept) targetCourse.dept = dept;
+                            targetCourse.modality = modality;
+                            targetCourse.maxSeats = maxSeats;
+                            targetCourse.credits = credits;
+                            if (assignedFacultyId) targetCourse.assignedFacultyId = assignedFacultyId;
+                            if (assignedRoomId && modality !== 'DIST') targetCourse.assignedRoomId = assignedRoomId;
+                            if (matchedTimeslotId && modality !== 'DIST') targetCourse.timeslotId = matchedTimeslotId;
+                            targetCourse.isModified = true;
+                            updatedCount++;
+                        } else {
+                            courseList.push({
+                                id: 'c_' + Date.now() + '_' + i,
+                                crn: crn || 'TBD',
+                                subj: subj || 'UNK',
+                                num: num || '101',
+                                section: section || 'A',
+                                dept,
+                                title,
+                                maxSeats,
+                                credits,
+                                modality,
+                                timeslotId: modality === 'DIST' ? '' : matchedTimeslotId,
+                                assignedRoomId: modality === 'DIST' ? '' : assignedRoomId,
+                                assignedFacultyId,
+                                isModified: true
+                            });
+                            newAddedCount++;
+                        }
+                    }
+
+                    populateMajorFilterOptions();
+                    filterCourseCatalog();
+                    renderFacultyTable();
+                    renderRoomTable();
+                    renderTimeslots();
+                    updateDashboardStats();
+                    renderModifiedLog();
+
+                    alert(`Successfully loaded saved changes! Updated ${updatedCount} courses and added ${newAddedCount} new entries.`);
+                } catch (err) {
+                    console.error(err);
+                    alert("Error parsing changes spreadsheet. Ensure it was exported using the 'Export Changes Only' button.");
+                }
+            };
+            e.target.value = '';
+            reader.readAsArrayBuffer(file);
+        }
+
         function convertTo24Hour(timeStr) {
             if (!timeStr) return '';
             let upper = String(timeStr).toUpperCase().trim();
@@ -926,7 +1124,6 @@
             return `${h < 10 ? '0' : ''}${h}:${m < 10 ? '0' : ''}${m}`;
         }
 
-        // Helper: Format 24hr string to 12hr Banner format
         function formatBannerTime(timeStr) {
             if (!timeStr) return '';
             let cleanTime = String(timeStr).trim();
@@ -943,7 +1140,6 @@
             return `${h}:${m < 10 ? '0' : ''}${m}${ampm}`;
         }
 
-        // --- DYNAMIC MAJOR CODE FILTERING ---
         function populateMajorFilterOptions() {
             const select = document.getElementById('course-filter-major');
             if (!select) return;
@@ -986,7 +1182,6 @@
             document.getElementById('course-filter-count').innerText = `Showing ${filtered.length} of ${courseList.length} courses`;
         }
 
-        // --- DASHBOARD METRICS ---
         function updateDashboardStats() {
             document.getElementById('stat-total-courses').innerText = courseList.length;
             const onGround = courseList.filter(c => c.modality === 'GRND').length;
@@ -1029,7 +1224,6 @@
             });
         }
 
-        // --- FACULTY MANAGEMENT ---
         function renderFacultyTable() {
             const tbody = document.getElementById('faculty-table-body');
             tbody.innerHTML = '';
@@ -1101,6 +1295,7 @@
                 updateDashboardStats();
                 alert(`Successfully imported ${added} faculty members!`);
             };
+            e.target.value = '';
             reader.readAsArrayBuffer(file);
         }
 
@@ -1158,7 +1353,6 @@
             }
         }
 
-        // --- COURSE CATALOG TABLE & MODAL LOGIC ---
         function renderCourseTable(dataToRender = courseList) {
             const tbody = document.getElementById('course-table-body');
             tbody.innerHTML = '';
@@ -1289,7 +1483,6 @@
             }
         }
 
-        // --- ROOM MANAGEMENT ---
         function renderRoomTable() {
             const tbody = document.getElementById('room-table-body');
             tbody.innerHTML = '';
@@ -1341,7 +1534,6 @@
             }
         }
 
-        // --- TIMESLOT MANAGEMENT ---
         function renderTimeslots() {
             const mwfContainer = document.getElementById('timeslots-mwf-list');
             const mwContainer = document.getElementById('timeslots-mw-list');
@@ -1394,7 +1586,6 @@
             filterCourseCatalog();
         }
 
-        // --- AUTOMATIC SCHEDULER ALGORITHM ---
         function runAutoScheduler() {
             let assignedCount = 0;
             let roomIndex = 0;
@@ -1430,7 +1621,6 @@
             alert('Auto-Scheduler complete! Updated assignments have been flagged for export.');
         }
 
-        // --- SCHEDULE GRID DISPLAY ---
         function renderScheduleGrid() {
             const tbody = document.getElementById('schedule-grid-body');
             tbody.innerHTML = '';
@@ -1460,7 +1650,6 @@
             });
         }
 
-        // --- EXPORT CHANGED ITEMS ONLY TO EXCEL WITH VISUAL HIGHLIGHTING ---
         function exportModifiedExcel() {
             const modifiedCourses = courseList.filter(c => c.isModified);
 
@@ -1469,14 +1658,12 @@
                 return;
             }
 
-            // Headers
             const headers = [
                 "CRN", "Subject", "Course Num", "Section", "Title", 
                 "Department", "Modality", "Max Seats", "Credits", 
                 "Instructor", "Room", "Meeting Days", "Start Time", "End Time", "Change Status"
             ];
 
-            // Build Row Data
             const rowsData = modifiedCourses.map(c => {
                 const fac = facultyList.find(f => f.id === c.assignedFacultyId);
                 const rm = roomList.find(r => r.id === c.assignedRoomId);
@@ -1501,19 +1688,17 @@
                 ];
             });
 
-            // Create Worksheet via SheetJS xlsx-js-style
             const wsData = [headers, ...rowsData];
             const ws = XLSX.utils.aoa_to_sheet(wsData);
 
-            // Styling configuration
             const headerStyle = {
-                fill: { fgColor: { rgb: "002D62" } }, // Utica Navy
+                fill: { fgColor: { rgb: "002D62" } },
                 font: { name: "Arial", sz: 11, bold: true, color: { rgb: "FFFFFF" } },
                 alignment: { horizontal: "center", vertical: "center" }
             };
 
             const modifiedRowStyle = {
-                fill: { fgColor: { rgb: "FFE6D5" } }, // Utica Light Orange Highlight
+                fill: { fgColor: { rgb: "FFE6D5" } },
                 font: { name: "Arial", sz: 10, bold: true, color: { rgb: "8B2500" } },
                 border: {
                     bottom: { style: "thin", color: { rgb: "E85E26" } },
@@ -1521,13 +1706,11 @@
                 }
             };
 
-            // Apply Header Style
             for (let col = 0; col < headers.length; col++) {
                 const cellRef = XLSX.utils.encode_cell({ r: 0, c: col });
                 if (ws[cellRef]) ws[cellRef].s = headerStyle;
             }
 
-            // Apply Modified Highlight Row Style
             for (let row = 1; row <= rowsData.length; row++) {
                 for (let col = 0; col < headers.length; col++) {
                     const cellRef = XLSX.utils.encode_cell({ r: row, c: col });
@@ -1535,7 +1718,6 @@
                 }
             }
 
-            // Set Column Widths
             ws['!cols'] = [
                 { wch: 10 }, { wch: 10 }, { wch: 12 }, { wch: 10 }, { wch: 32 },
                 { wch: 18 }, { wch: 12 }, { wch: 12 }, { wch: 10 },
@@ -1548,7 +1730,6 @@
             XLSX.writeFile(wb, "Utica_Schedule_Changes_Highlight.xlsx");
         }
 
-        // --- FULL BANNER OUTPUT.CSV EXPORT ---
         function exportToBannerCSV() {
             const line1 = "SYRCRLT Schedule Roll Template,202710,Coll Codes: %,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,";
             const line2 = "School,Do Not Use - Registrars Use,CRN,Status,Dept,Subj,Crse#,Section,Instructor (Primary marked with asterisk),Part Of Term,Campus,Sched Type,Gradable,Grade Mode,Credit Hours,Course Contact Hours,Faculty Contact Hours,Overload Y/N,Overload Amount,FirstTime Online,Engage(Y/N),Writing Intensive(Y/N),Fees,Max Seats,Enrollment,Waitlist Max,Reserved Seats,Title,Program Restrictions,Majr Restrictions,Campus Restrictions,Level Restrictions,Class Restrictions,Cross Listed With,Meet Days,Meet Begin Time,Meet End Time,Meet Building and Room,Room Capacity,Section Comments,Additional Comments,Modality(Attribute),Modality(Title)";
