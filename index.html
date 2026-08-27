@@ -3,59 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Academic Course Scheduler & Banner Exporter</title>
+    <title>Utica University - Academic Course Scheduler & Banner Exporter</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome CDN -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- SheetJS CDN for Excel (.xlsx/.xls) and CSV parsing -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- SheetJS with Styling CDN (xlsx-js-style) -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
 </head>
 <body class="bg-slate-100 text-slate-800 min-h-screen font-sans flex flex-col">
 
-    <!-- Header -->
-    <header class="bg-indigo-900 text-white shadow-lg">
-        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+    <!-- Header styled in Utica Navy and Orange -->
+    <header class="bg-[#002D62] text-white shadow-xl border-b-4 border-[#E85E26]">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
             <div class="flex items-center space-x-3">
-                <i class="fa-solid fa-calendar-days text-3xl text-indigo-400"></i>
+                <div class="bg-[#E85E26] text-white p-2.5 rounded-xl shadow-md">
+                    <i class="fa-solid fa-graduation-cap text-2xl"></i>
+                </div>
                 <div>
-                    <h1 class="text-xl font-bold tracking-wide">Academic Course Scheduler</h1>
-                    <p class="text-xs text-indigo-200">Banner Schedule Roll Template Generator</p>
+                    <div class="flex items-center space-x-2">
+                        <h1 class="text-xl font-black tracking-wider uppercase text-white">Utica University</h1>
+                        <span class="bg-[#E85E26] text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-widest">Scheduler</span>
+                    </div>
+                    <p class="text-xs text-slate-300">Banner Schedule Roll & Course Assignment Management System</p>
                 </div>
             </div>
-            <div class="flex space-x-2">
-                <button onclick="runAutoScheduler()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-4 py-2 rounded-lg shadow flex items-center space-x-2 transition">
-                    <i class="fa-solid fa-bolt"></i>
-                    <span>Generate Schedule</span>
+            <div class="flex flex-wrap items-center gap-2">
+                <button onclick="exportModifiedExcel()" class="bg-[#E85E26] hover:bg-[#d14f1d] text-white font-bold px-4 py-2 rounded-lg shadow-md flex items-center space-x-2 transition text-sm">
+                    <i class="fa-solid fa-file-excel"></i>
+                    <span>Export Changes Only (.xlsx)</span>
                 </button>
-                <button onclick="exportToBannerCSV()" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg shadow flex items-center space-x-2 transition">
+                <button onclick="runAutoScheduler()" class="bg-[#001D42] hover:bg-[#00122B] text-amber-400 font-semibold px-4 py-2 rounded-lg shadow border border-amber-500/30 flex items-center space-x-2 transition text-sm">
+                    <i class="fa-solid fa-bolt text-amber-400"></i>
+                    <span>Auto-Assign</span>
+                </button>
+                <button onclick="exportToBannerCSV()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-4 py-2 rounded-lg shadow flex items-center space-x-2 transition text-sm">
                     <i class="fa-solid fa-file-csv"></i>
-                    <span>Export Banner output.csv</span>
+                    <span>Banner output.csv</span>
                 </button>
             </div>
         </div>
     </header>
 
     <!-- Navigation Tabs -->
-    <nav class="bg-white border-b border-slate-200 shadow-sm">
-        <div class="max-w-7xl mx-auto px-4 flex space-x-8">
-            <button onclick="switchTab('dashboard')" id="tab-dashboard" class="tab-btn py-4 px-2 border-b-2 font-medium text-sm border-indigo-600 text-indigo-600 flex items-center space-x-2">
-                <i class="fa-solid fa-chart-pie"></i><span>Dashboard</span>
+    <nav class="bg-white border-b border-slate-200 shadow-sm sticky top-0 z-30">
+        <div class="max-w-7xl mx-auto px-4 flex overflow-x-auto space-x-6 scrollbar-none">
+            <button onclick="switchTab('dashboard')" id="tab-dashboard" class="tab-btn py-3.5 px-3 border-b-2 font-bold text-sm border-[#E85E26] text-[#002D62] flex items-center space-x-2 whitespace-nowrap">
+                <i class="fa-solid fa-chart-pie text-[#E85E26]"></i><span>Dashboard</span>
             </button>
-            <button onclick="switchTab('faculty')" id="tab-faculty" class="tab-btn py-4 px-2 border-b-2 font-medium text-sm border-transparent text-slate-500 hover:text-slate-700 flex items-center space-x-2">
-                <i class="fa-solid fa-user-graduate"></i><span>Faculty Roster</span>
-            </button>
-            <button onclick="switchTab('courses')" id="tab-courses" class="tab-btn py-4 px-2 border-b-2 font-medium text-sm border-transparent text-slate-500 hover:text-slate-700 flex items-center space-x-2">
+            <button onclick="switchTab('courses')" id="tab-courses" class="tab-btn py-3.5 px-3 border-b-2 font-medium text-sm border-transparent text-slate-500 hover:text-[#002D62] flex items-center space-x-2 whitespace-nowrap">
                 <i class="fa-solid fa-book"></i><span>Course Catalog</span>
             </button>
-            <button onclick="switchTab('rooms')" id="tab-rooms" class="tab-btn py-4 px-2 border-b-2 font-medium text-sm border-transparent text-slate-500 hover:text-slate-700 flex items-center space-x-2">
+            <button onclick="switchTab('faculty')" id="tab-faculty" class="tab-btn py-3.5 px-3 border-b-2 font-medium text-sm border-transparent text-slate-500 hover:text-[#002D62] flex items-center space-x-2 whitespace-nowrap">
+                <i class="fa-solid fa-user-graduate"></i><span>Faculty Roster</span>
+            </button>
+            <button onclick="switchTab('rooms')" id="tab-rooms" class="tab-btn py-3.5 px-3 border-b-2 font-medium text-sm border-transparent text-slate-500 hover:text-[#002D62] flex items-center space-x-2 whitespace-nowrap">
                 <i class="fa-solid fa-door-open"></i><span>Classrooms</span>
             </button>
-            <button onclick="switchTab('timeslots')" id="tab-timeslots" class="tab-btn py-4 px-2 border-b-2 font-medium text-sm border-transparent text-slate-500 hover:text-slate-700 flex items-center space-x-2">
+            <button onclick="switchTab('timeslots')" id="tab-timeslots" class="tab-btn py-3.5 px-3 border-b-2 font-medium text-sm border-transparent text-slate-500 hover:text-[#002D62] flex items-center space-x-2 whitespace-nowrap">
                 <i class="fa-solid fa-clock"></i><span>Timeslots</span>
             </button>
-            <button onclick="switchTab('schedule')" id="tab-schedule" class="tab-btn py-4 px-2 border-b-2 font-medium text-sm border-transparent text-slate-500 hover:text-slate-700 flex items-center space-x-2">
-                <i class="fa-solid fa-table-cells"></i><span>Schedule View</span>
+            <button onclick="switchTab('schedule')" id="tab-schedule" class="tab-btn py-3.5 px-3 border-b-2 font-medium text-sm border-transparent text-slate-500 hover:text-[#002D62] flex items-center space-x-2 whitespace-nowrap">
+                <i class="fa-solid fa-table-cells"></i><span>Schedule Grid</span>
             </button>
         </div>
     </nav>
@@ -63,44 +72,170 @@
     <!-- Main Content Area -->
     <main class="max-w-7xl mx-auto px-4 py-6 flex-grow w-full">
 
-        <!-- DASHBOARD TAB -->
+        <!-- DASHBOARD / LANDING SCREEN TAB -->
         <section id="content-dashboard" class="tab-content space-y-6">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+
+            <!-- Metrics Overview Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 border-t-4 border-t-[#002D62]">
                     <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Courses</div>
-                    <div class="text-3xl font-extrabold text-indigo-900 mt-2" id="stat-total-courses">0</div>
+                    <div class="text-3xl font-black text-[#002D62] mt-1" id="stat-total-courses">0</div>
                     <div class="text-xs text-slate-500 mt-1" id="stat-courses-breakdown">0 On-Ground / 0 Online</div>
                 </div>
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 border-t-4 border-t-[#E85E26]">
                     <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Faculty Roster</div>
-                    <div class="text-3xl font-extrabold text-indigo-900 mt-2" id="stat-total-faculty">0</div>
+                    <div class="text-3xl font-black text-[#002D62] mt-1" id="stat-total-faculty">0</div>
                     <div class="text-xs text-slate-500 mt-1">Active Professors</div>
                 </div>
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 border-t-4 border-t-[#002D62]">
                     <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Classrooms</div>
-                    <div class="text-3xl font-extrabold text-indigo-900 mt-2" id="stat-total-rooms">0</div>
+                    <div class="text-3xl font-black text-[#002D62] mt-1" id="stat-total-rooms">0</div>
                     <div class="text-xs text-slate-500 mt-1">Available Rooms</div>
                 </div>
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 border-t-4 border-t-[#E85E26]">
+                    <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Modified Items</div>
+                    <div class="text-3xl font-black text-[#E85E26] mt-1" id="stat-total-modified">0</div>
+                    <div class="text-xs text-amber-700 font-semibold mt-1">Pending Excel Export</div>
+                </div>
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 border-t-4 border-t-emerald-600">
                     <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Schedule Status</div>
-                    <div class="text-3xl font-extrabold text-amber-600 mt-2" id="stat-schedule-status">Pending</div>
+                    <div class="text-2xl font-black text-amber-600 mt-1" id="stat-schedule-status">Pending</div>
                     <div class="text-xs text-slate-500 mt-1" id="stat-conflicts-count">0 Conflicts Detected</div>
                 </div>
             </div>
 
-            <!-- Overview Banner -->
-            <div class="bg-indigo-50 border border-indigo-100 rounded-xl p-6 flex flex-col md:flex-row items-center justify-between">
-                <div>
-                    <h2 class="text-lg font-bold text-indigo-900">Banner Schedule Roll Setup Ready</h2>
-                    <p class="text-sm text-indigo-700 mt-1">Upload your department Excel schedule template, manage max seats, customize default timeslots, and export to Banner format.</p>
+            <!-- Primary Landing Screen Upload & Quick Actions Hero -->
+            <div class="bg-gradient-to-br from-[#002D62] via-[#001D42] to-[#0A3C7D] rounded-2xl shadow-lg p-6 md:p-8 text-white relative overflow-hidden border-l-8 border-[#E85E26]">
+                <div class="relative z-10 max-w-3xl">
+                    <span class="inline-block bg-[#E85E26] text-white text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full mb-3 shadow">
+                        Semester Schedule Import
+                    </span>
+                    <h2 class="text-2xl md:text-3xl font-extrabold tracking-tight">Load Previous Semester Schedule</h2>
+                    <p class="text-slate-200 text-sm md:text-base mt-2 leading-relaxed">
+                        Import your Banner export spreadsheet (<code class="bg-black/30 px-1.5 py-0.5 rounded text-amber-300">.xlsx</code>) from previous terms. The system will automatically parse courses, assigned faculty, timeslots, rooms, modality, and max seat limits.
+                    </p>
+
+                    <!-- File Drop / Upload Box -->
+                    <div class="mt-6 flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
+                        <label class="flex-grow bg-white/10 hover:bg-white/20 border-2 border-dashed border-amber-400/50 hover:border-amber-400 rounded-xl p-4 cursor-pointer transition flex items-center justify-center space-x-3 text-center group">
+                            <i class="fa-solid fa-file-excel text-3xl text-emerald-400 group-hover:scale-110 transition"></i>
+                            <div class="text-left">
+                                <p class="text-sm font-bold text-white">Click to Select or Drop Semester Excel File (.xlsx)</p>
+                                <p class="text-xs text-slate-300">Supports Banner Schedule Roll Exports (e.g. BJS-syrcrlt-202710)</p>
+                            </div>
+                            <input type="file" accept=".xlsx, .xls" class="hidden" onchange="importMasterScheduleFile(event)">
+                        </label>
+
+                        <div class="flex flex-col gap-2">
+                            <button onclick="loadSampleData()" class="bg-white/10 hover:bg-white/20 text-white border border-white/30 font-semibold px-4 py-2.5 rounded-xl text-xs transition flex items-center justify-center space-x-2">
+                                <i class="fa-solid fa-rotate-left text-amber-300"></i>
+                                <span>Reset / Load Sample</span>
+                            </button>
+                            <button onclick="exportModifiedExcel()" class="bg-[#E85E26] hover:bg-[#d14f1d] text-white font-bold px-4 py-2.5 rounded-xl text-xs transition shadow flex items-center justify-center space-x-2">
+                                <i class="fa-solid fa-file-export"></i>
+                                <span>Export Changes (.xlsx)</span>
+                            </button>
+                        </div>
+                    </div>
                 </div>
-                <div class="mt-4 md:mt-0 flex space-x-3">
-                    <button onclick="loadSampleData()" class="bg-white border border-indigo-300 text-indigo-700 hover:bg-indigo-100 font-semibold px-4 py-2 rounded-lg text-sm shadow-sm transition">
-                        Load Sample Data
+            </div>
+
+            <!-- Dashboard Recent Activity / Modified List Preview -->
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <div>
+                        <h3 class="font-extrabold text-[#002D62] text-lg">Modified Schedule Log</h3>
+                        <p class="text-xs text-slate-500">Items updated in this session that will be exported to your custom changes spreadsheet.</p>
+                    </div>
+                    <button onclick="exportModifiedExcel()" class="bg-[#E85E26] hover:bg-[#d14f1d] text-white font-bold text-xs px-3 py-1.5 rounded shadow">
+                        Export Highlighted Excel
                     </button>
-                    <button onclick="runAutoScheduler()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-4 py-2 rounded-lg text-sm shadow transition">
-                        Auto-Assign Schedule
+                </div>
+                <div id="modified-log-container" class="divide-y divide-slate-100 max-h-60 overflow-y-auto">
+                    <p class="text-xs text-slate-400 italic py-4 text-center">No modifications recorded yet. Make edits in the Course Catalog to track changes here.</p>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- COURSE CATALOG TAB WITH MAJOR CODE FILTER -->
+        <section id="content-courses" class="tab-content hidden space-y-6">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <h2 class="text-2xl font-black text-[#002D62]">Course Catalog</h2>
+                    <p class="text-xs text-slate-500">Filter courses by major code, manage capacity, edit details, or upload new templates.</p>
+                </div>
+                <div class="flex flex-wrap items-center gap-2">
+                    <label class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-3 py-2 rounded-lg shadow text-xs cursor-pointer flex items-center space-x-2 transition">
+                        <i class="fa-solid fa-file-excel"></i>
+                        <span>Upload (.xlsx)</span>
+                        <input type="file" accept=".xlsx, .xls" class="hidden" onchange="importMasterScheduleFile(event)">
+                    </label>
+                    <button onclick="openCourseModal()" class="bg-[#002D62] hover:bg-[#001D42] text-white font-semibold px-3 py-2 rounded-lg shadow text-xs flex items-center space-x-2 transition">
+                        <i class="fa-solid fa-plus"></i><span>Add Course</span>
                     </button>
+                </div>
+            </div>
+
+            <!-- Major Code & Search Filter Bar -->
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col md:flex-row gap-4 items-center justify-between">
+                <div class="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
+                    <!-- Major Code Select Filter -->
+                    <div class="w-full sm:w-64">
+                        <label class="block text-[10px] font-extrabold uppercase text-[#002D62] mb-1">Filter by Major Code</label>
+                        <select id="course-filter-major" onchange="filterCourseCatalog()" class="w-full bg-slate-50 border border-slate-300 font-semibold text-slate-800 text-sm rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#E85E26] outline-none">
+                            <option value="ALL">All Majors / Subjects</option>
+                            <!-- Dynamically populated e.g. CYB, ACC, CRJ -->
+                        </select>
+                    </div>
+
+                    <!-- Modality Filter -->
+                    <div class="w-full sm:w-48">
+                        <label class="block text-[10px] font-extrabold uppercase text-[#002D62] mb-1">Modality</label>
+                        <select id="course-filter-modality" onchange="filterCourseCatalog()" class="w-full bg-slate-50 border border-slate-300 font-semibold text-slate-800 text-sm rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#E85E26] outline-none">
+                            <option value="ALL">All Modalities</option>
+                            <option value="GRND">On-Ground (GRND)</option>
+                            <option value="DIST">Online (DIST)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Text Search -->
+                <div class="w-full md:w-72">
+                    <label class="block text-[10px] font-extrabold uppercase text-[#002D62] mb-1">Search Courses</label>
+                    <div class="relative">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-sm"></i>
+                        <input type="text" id="course-filter-search" oninput="filterCourseCatalog()" placeholder="Search title, CRN, code..." class="w-full bg-slate-50 border border-slate-300 text-sm rounded-lg pl-9 pr-3 py-1.5 focus:ring-2 focus:ring-[#E85E26] outline-none">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Course Catalog Table -->
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="px-4 py-2 bg-slate-50 border-b border-slate-200 flex justify-between items-center text-xs text-slate-500">
+                    <span id="course-filter-count">Showing 0 courses</span>
+                    <span class="text-slate-400">Items highlighted with badge have unsaved changes for export</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse min-w-[900px]">
+                        <thead>
+                            <tr class="bg-[#002D62] text-white text-xs font-bold uppercase tracking-wider">
+                                <th class="p-3.5">CRN / Code</th>
+                                <th class="p-3.5">Course Title</th>
+                                <th class="p-3.5">Sec</th>
+                                <th class="p-3.5">Max Seats</th>
+                                <th class="p-3.5">Modality</th>
+                                <th class="p-3.5">Timeslot</th>
+                                <th class="p-3.5">Room</th>
+                                <th class="p-3.5">Instructor</th>
+                                <th class="p-3.5">Status</th>
+                                <th class="p-3.5 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="course-table-body" class="divide-y divide-slate-200 text-sm">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </section>
@@ -109,17 +244,17 @@
         <section id="content-faculty" class="tab-content hidden space-y-6">
             <div class="flex justify-between items-center">
                 <div>
-                    <h2 class="text-xl font-bold text-slate-800">Faculty Management</h2>
-                    <p class="text-sm text-slate-500">Upload Banner ID spreadsheets or add faculty members manually.</p>
+                    <h2 class="text-2xl font-black text-[#002D62]">Faculty Roster</h2>
+                    <p class="text-xs text-slate-500">Manage instructors, max teaching loads, and course assignments.</p>
                 </div>
-                <div class="flex space-x-3">
-                    <label class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-4 py-2 rounded-lg shadow text-sm cursor-pointer flex items-center space-x-2 transition">
+                <div class="flex space-x-2">
+                    <label class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-3 py-2 rounded-lg shadow text-xs cursor-pointer flex items-center space-x-2 transition">
                         <i class="fa-solid fa-file-excel"></i>
-                        <span>Import Excel / CSV</span>
+                        <span>Import Roster</span>
                         <input type="file" id="faculty-file-input" accept=".xlsx, .xls, .csv" class="hidden" onchange="importFacultyFile(event)">
                     </label>
-                    <button onclick="openFacultyModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-4 py-2 rounded-lg shadow text-sm flex items-center space-x-2 transition">
-                        <i class="fa-solid fa-plus"></i><span>Add Faculty Member</span>
+                    <button onclick="openFacultyModal()" class="bg-[#002D62] hover:bg-[#001D42] text-white font-semibold px-3 py-2 rounded-lg shadow text-xs flex items-center space-x-2 transition">
+                        <i class="fa-solid fa-plus"></i><span>Add Faculty</span>
                     </button>
                 </div>
             </div>
@@ -127,57 +262,15 @@
             <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
                 <table class="w-full text-left border-collapse">
                     <thead>
-                        <tr class="bg-slate-50 border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase">
-                            <th class="p-4">Banner ID</th>
-                            <th class="p-4">Faculty Name</th>
-                            <th class="p-4">Max Course Load</th>
-                            <th class="p-4">Assigned Courses</th>
-                            <th class="p-4 text-right">Actions</th>
+                        <tr class="bg-[#002D62] text-white text-xs font-bold uppercase tracking-wider">
+                            <th class="p-3.5">Banner ID</th>
+                            <th class="p-3.5">Faculty Name</th>
+                            <th class="p-3.5">Max Course Load</th>
+                            <th class="p-3.5">Assigned Courses</th>
+                            <th class="p-3.5 text-right">Actions</th>
                         </tr>
                     </thead>
                     <tbody id="faculty-table-body" class="divide-y divide-slate-200 text-sm">
-                        <!-- Populated dynamically -->
-                    </tbody>
-                </table>
-            </div>
-        </section>
-
-        <!-- COURSE CATALOG TAB -->
-        <section id="content-courses" class="tab-content hidden space-y-6">
-            <div class="flex justify-between items-center">
-                <div>
-                    <h2 class="text-xl font-bold text-slate-800">Course Catalog</h2>
-                    <p class="text-sm text-slate-500">Upload your department schedule spreadsheet or configure courses manually.</p>
-                </div>
-                <div class="flex space-x-3">
-                    <!-- NEW: Master Schedule Spreadsheet Upload Button -->
-                    <label class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-4 py-2 rounded-lg shadow text-sm cursor-pointer flex items-center space-x-2 transition">
-                        <i class="fa-solid fa-file-excel"></i>
-                        <span>Upload Schedule Spreadsheet (.xlsx)</span>
-                        <input type="file" id="schedule-file-input" accept=".xlsx, .xls" class="hidden" onchange="importMasterScheduleFile(event)">
-                    </label>
-                    <button onclick="openCourseModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-4 py-2 rounded-lg shadow text-sm flex items-center space-x-2 transition">
-                        <i class="fa-solid fa-plus"></i><span>Add Course</span>
-                    </button>
-                </div>
-            </div>
-
-            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="bg-slate-50 border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase">
-                            <th class="p-4">CRN / Code</th>
-                            <th class="p-4">Course Title</th>
-                            <th class="p-4">Section</th>
-                            <th class="p-4">Max Seats</th>
-                            <th class="p-4">Modality</th>
-                            <th class="p-4">Preferred Slot</th>
-                            <th class="p-4">Assigned Room</th>
-                            <th class="p-4">Assigned Instructor</th>
-                            <th class="p-4 text-right">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="course-table-body" class="divide-y divide-slate-200 text-sm">
                         <!-- Populated dynamically -->
                     </tbody>
                 </table>
@@ -188,10 +281,10 @@
         <section id="content-rooms" class="tab-content hidden space-y-6">
             <div class="flex justify-between items-center">
                 <div>
-                    <h2 class="text-xl font-bold text-slate-800">Classroom Management</h2>
-                    <p class="text-sm text-slate-500">Manage available campus rooms, seating capacity, and room types.</p>
+                    <h2 class="text-2xl font-black text-[#002D62]">Classroom Management</h2>
+                    <p class="text-xs text-slate-500">Campus buildings, room capacities, and physical room types.</p>
                 </div>
-                <button onclick="openRoomModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-4 py-2 rounded-lg shadow text-sm flex items-center space-x-2 transition">
+                <button onclick="openRoomModal()" class="bg-[#002D62] hover:bg-[#001D42] text-white font-semibold px-3 py-2 rounded-lg shadow text-xs flex items-center space-x-2 transition">
                     <i class="fa-solid fa-plus"></i><span>Add Room</span>
                 </button>
             </div>
@@ -199,11 +292,11 @@
             <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
                 <table class="w-full text-left border-collapse">
                     <thead>
-                        <tr class="bg-slate-50 border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase">
-                            <th class="p-4">Building & Room</th>
-                            <th class="p-4">Seating Capacity</th>
-                            <th class="p-4">Room Type</th>
-                            <th class="p-4 text-right">Actions</th>
+                        <tr class="bg-[#002D62] text-white text-xs font-bold uppercase tracking-wider">
+                            <th class="p-3.5">Building & Room</th>
+                            <th class="p-3.5">Seating Capacity</th>
+                            <th class="p-3.5">Room Type</th>
+                            <th class="p-3.5 text-right">Actions</th>
                         </tr>
                     </thead>
                     <tbody id="room-table-body" class="divide-y divide-slate-200 text-sm">
@@ -217,47 +310,47 @@
         <section id="content-timeslots" class="tab-content hidden space-y-6">
             <div class="flex justify-between items-center">
                 <div>
-                    <h2 class="text-xl font-bold text-slate-800">Standard Timeslots</h2>
-                    <p class="text-sm text-slate-500">Configure default teaching blocks for MWF, MF, and TR schedule patterns.</p>
+                    <h2 class="text-2xl font-black text-[#002D62]">Standard Timeslots</h2>
+                    <p class="text-xs text-slate-500">Configure default teaching blocks for MWF, MF, and TR patterns.</p>
                 </div>
-                <button onclick="openTimeslotModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-4 py-2 rounded-lg shadow text-sm flex items-center space-x-2 transition">
+                <button onclick="openTimeslotModal()" class="bg-[#002D62] hover:bg-[#001D42] text-white font-semibold px-3 py-2 rounded-lg shadow text-xs flex items-center space-x-2 transition">
                     <i class="fa-solid fa-plus"></i><span>Add Custom Timeslot</span>
                 </button>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <!-- MWF Card -->
-                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 border-t-4 border-t-[#002D62]">
                     <div class="flex items-center justify-between border-b pb-3 mb-4">
-                        <h3 class="font-bold text-indigo-900 flex items-center space-x-2">
-                            <i class="fa-solid fa-calendar-day text-indigo-600"></i>
+                        <h3 class="font-bold text-[#002D62] flex items-center space-x-2">
+                            <i class="fa-solid fa-calendar-day text-[#E85E26]"></i>
                             <span>Monday Wednesday Friday (MWF)</span>
                         </h3>
-                        <span class="text-xs font-semibold px-2 py-1 bg-indigo-50 text-indigo-700 rounded">50 min blocks</span>
+                        <span class="text-xs font-semibold px-2 py-0.5 bg-orange-50 text-[#E85E26] rounded">50 min</span>
                     </div>
                     <div id="timeslots-mwf-list" class="space-y-2"></div>
                 </div>
 
                 <!-- MF Card -->
-                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 border-t-4 border-t-[#002D62]">
                     <div class="flex items-center justify-between border-b pb-3 mb-4">
-                        <h3 class="font-bold text-indigo-900 flex items-center space-x-2">
-                            <i class="fa-solid fa-calendar-day text-indigo-600"></i>
+                        <h3 class="font-bold text-[#002D62] flex items-center space-x-2">
+                            <i class="fa-solid fa-calendar-day text-[#E85E26]"></i>
                             <span>Monday Friday (MF)</span>
                         </h3>
-                        <span class="text-xs font-semibold px-2 py-1 bg-indigo-50 text-indigo-700 rounded">75 min blocks</span>
+                        <span class="text-xs font-semibold px-2 py-0.5 bg-orange-50 text-[#E85E26] rounded">75 min</span>
                     </div>
                     <div id="timeslots-mf-list" class="space-y-2"></div>
                 </div>
 
                 <!-- TR Card -->
-                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 border-t-4 border-t-[#002D62]">
                     <div class="flex items-center justify-between border-b pb-3 mb-4">
-                        <h3 class="font-bold text-indigo-900 flex items-center space-x-2">
-                            <i class="fa-solid fa-calendar-day text-indigo-600"></i>
+                        <h3 class="font-bold text-[#002D62] flex items-center space-x-2">
+                            <i class="fa-solid fa-calendar-day text-[#E85E26]"></i>
                             <span>Tuesday Thursday (TR)</span>
                         </h3>
-                        <span class="text-xs font-semibold px-2 py-1 bg-indigo-50 text-indigo-700 rounded">75 min blocks</span>
+                        <span class="text-xs font-semibold px-2 py-0.5 bg-orange-50 text-[#E85E26] rounded">75 min</span>
                     </div>
                     <div id="timeslots-tr-list" class="space-y-2"></div>
                 </div>
@@ -268,23 +361,22 @@
         <section id="content-schedule" class="tab-content hidden space-y-6">
             <div class="flex justify-between items-center">
                 <div>
-                    <h2 class="text-xl font-bold text-slate-800">Master Schedule Grid</h2>
-                    <p class="text-sm text-slate-500">Visual weekly layout of assigned courses across campus.</p>
+                    <h2 class="text-2xl font-black text-[#002D62]">Master Schedule Grid</h2>
+                    <p class="text-xs text-slate-500">Visual layout of assigned courses across campus timeslots.</p>
                 </div>
-                <button onclick="exportToBannerCSV()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-4 py-2 rounded-lg shadow text-sm flex items-center space-x-2 transition">
-                    <i class="fa-solid fa-download"></i><span>Download output.csv</span>
+                <button onclick="exportToBannerCSV()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-3 py-2 rounded-lg shadow text-xs flex items-center space-x-2 transition">
+                    <i class="fa-solid fa-download"></i><span>Download Banner CSV</span>
                 </button>
             </div>
 
-            <!-- Schedule Timetable Grid -->
             <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-x-auto p-4">
                 <table class="w-full text-center border-collapse min-w-[800px]">
                     <thead>
-                        <tr class="bg-slate-100 text-slate-700 text-xs uppercase font-bold">
-                            <th class="p-3 border">Day Pattern</th>
-                            <th class="p-3 border">Time Block</th>
-                            <th class="p-3 border">Scheduled Course & Room</th>
-                            <th class="p-3 border">Assigned Instructor</th>
+                        <tr class="bg-[#002D62] text-white text-xs uppercase font-bold">
+                            <th class="p-3 border border-slate-700">Day Pattern</th>
+                            <th class="p-3 border border-slate-700">Time Block</th>
+                            <th class="p-3 border border-slate-700">Scheduled Course & Room</th>
+                            <th class="p-3 border border-slate-700">Assigned Instructor</th>
                         </tr>
                     </thead>
                     <tbody id="schedule-grid-body" class="text-sm divide-y divide-slate-200">
@@ -299,86 +391,86 @@
     <!-- MODALS -->
 
     <!-- Faculty Modal -->
-    <div id="faculty-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden flex justify-center items-center z-50">
-        <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
-            <h3 class="text-lg font-bold text-slate-800 mb-4" id="faculty-modal-title">Add Faculty Member</h3>
+    <div id="faculty-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex justify-center items-center z-50">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md p-6 border-t-4 border-[#E85E26]">
+            <h3 class="text-lg font-extrabold text-[#002D62] mb-4" id="faculty-modal-title">Add Faculty Member</h3>
             <form onsubmit="saveFaculty(event)" class="space-y-4">
                 <input type="hidden" id="faculty-id">
                 <div>
-                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Banner ID</label>
-                    <input type="text" id="faculty-banner-id" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
+                    <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Banner ID</label>
+                    <input type="text" id="faculty-banner-id" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#E85E26] outline-none">
                 </div>
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">First Name</label>
-                        <input type="text" id="faculty-first-name" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
+                        <label class="block text-xs font-bold text-slate-600 uppercase mb-1">First Name</label>
+                        <input type="text" id="faculty-first-name" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#E85E26] outline-none">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Last Name</label>
-                        <input type="text" id="faculty-last-name" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
+                        <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Last Name</label>
+                        <input type="text" id="faculty-last-name" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#E85E26] outline-none">
                     </div>
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Max Courses Allowed</label>
-                    <input type="number" id="faculty-max-courses" value="3" min="1" max="10" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
+                    <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Max Courses Allowed</label>
+                    <input type="number" id="faculty-max-courses" value="3" min="1" max="10" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#E85E26] outline-none">
                 </div>
                 <div class="flex justify-end space-x-3 pt-4 border-t">
                     <button type="button" onclick="closeFacultyModal()" class="px-4 py-2 border border-slate-300 text-slate-600 rounded-lg text-sm font-semibold hover:bg-slate-50">Cancel</button>
-                    <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-semibold">Save Faculty</button>
+                    <button type="submit" class="px-4 py-2 bg-[#002D62] hover:bg-[#001D42] text-white rounded-lg text-sm font-semibold">Save Faculty</button>
                 </div>
             </form>
         </div>
     </div>
 
     <!-- Course Modal -->
-    <div id="course-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden flex justify-center items-center z-50">
-        <div class="bg-white rounded-xl shadow-xl w-full max-w-lg p-6">
-            <h3 class="text-lg font-bold text-slate-800 mb-4" id="course-modal-title">Add Course</h3>
+    <div id="course-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex justify-center items-center z-50">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg p-6 border-t-4 border-[#E85E26]">
+            <h3 class="text-lg font-extrabold text-[#002D62] mb-4" id="course-modal-title">Add Course</h3>
             <form onsubmit="saveCourse(event)" class="space-y-4">
                 <input type="hidden" id="course-id">
                 <div class="grid grid-cols-3 gap-3">
                     <div>
-                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Subject</label>
-                        <input type="text" id="course-subj" placeholder="CYB" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
+                        <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Subject Code</label>
+                        <input type="text" id="course-subj" placeholder="CYB" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#E85E26] outline-none font-bold text-[#002D62]">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Crse#</label>
-                        <input type="text" id="course-num" placeholder="101" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
+                        <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Crse#</label>
+                        <input type="text" id="course-num" placeholder="101" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#E85E26] outline-none">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Section</label>
-                        <input type="text" id="course-section" placeholder="A" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
+                        <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Section</label>
+                        <input type="text" id="course-section" placeholder="A" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#E85E26] outline-none">
                     </div>
                 </div>
 
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">CRN</label>
-                        <input type="text" id="course-crn" placeholder="5236" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
+                        <label class="block text-xs font-bold text-slate-600 uppercase mb-1">CRN</label>
+                        <input type="text" id="course-crn" placeholder="5236" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#E85E26] outline-none">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Department</label>
-                        <input type="text" id="course-dept" placeholder="Cybersecurity" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
+                        <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Department</label>
+                        <input type="text" id="course-dept" placeholder="Cybersecurity" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#E85E26] outline-none">
                     </div>
                 </div>
 
                 <div>
-                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Course Title</label>
-                    <input type="text" id="course-title" placeholder="Intro into Cybersecurity" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
+                    <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Course Title</label>
+                    <input type="text" id="course-title" placeholder="Intro to Cybersecurity" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#E85E26] outline-none">
                 </div>
 
                 <div class="grid grid-cols-3 gap-3">
                     <div>
-                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Max Seats</label>
-                        <input type="number" id="course-max-seats" value="25" min="1" max="500" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
+                        <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Max Seats</label>
+                        <input type="number" id="course-max-seats" value="25" min="1" max="500" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#E85E26] outline-none">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Credit Hours</label>
-                        <input type="number" id="course-credits" value="3" min="1" max="6" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
+                        <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Credit Hours</label>
+                        <input type="number" id="course-credits" value="3" min="1" max="6" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#E85E26] outline-none">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Modality</label>
-                        <select id="course-modality" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
+                        <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Modality</label>
+                        <select id="course-modality" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#E85E26] outline-none text-sm font-semibold">
                             <option value="GRND">On-Ground (GRND)</option>
                             <option value="DIST">Distance/Online (DIST)</option>
                         </select>
@@ -387,14 +479,14 @@
 
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Preferred Timeslot</label>
-                        <select id="course-timeslot-select" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
+                        <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Preferred Timeslot</label>
+                        <select id="course-timeslot-select" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#E85E26] outline-none text-sm">
                             <!-- Populated dynamically -->
                         </select>
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Assigned Instructor</label>
-                        <select id="course-instructor-select" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
+                        <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Assigned Instructor</label>
+                        <select id="course-instructor-select" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#E85E26] outline-none text-sm">
                             <!-- Populated dynamically -->
                         </select>
                     </div>
@@ -402,30 +494,30 @@
 
                 <div class="flex justify-end space-x-3 pt-4 border-t">
                     <button type="button" onclick="closeCourseModal()" class="px-4 py-2 border border-slate-300 text-slate-600 rounded-lg text-sm font-semibold hover:bg-slate-50">Cancel</button>
-                    <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-semibold">Save Course</button>
+                    <button type="submit" class="px-4 py-2 bg-[#E85E26] hover:bg-[#d14f1d] text-white rounded-lg text-sm font-bold shadow">Save & Flag Changed</button>
                 </div>
             </form>
         </div>
     </div>
 
     <!-- Room Modal -->
-    <div id="room-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden flex justify-center items-center z-50">
-        <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
-            <h3 class="text-lg font-bold text-slate-800 mb-4" id="room-modal-title">Add Classroom</h3>
+    <div id="room-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex justify-center items-center z-50">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md p-6 border-t-4 border-[#E85E26]">
+            <h3 class="text-lg font-extrabold text-[#002D62] mb-4">Add Classroom</h3>
             <form onsubmit="saveRoom(event)" class="space-y-4">
                 <input type="hidden" id="room-id">
                 <div>
-                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Building & Room Code</label>
-                    <input type="text" id="room-name" placeholder="ECJS214" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
+                    <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Building & Room Code</label>
+                    <input type="text" id="room-name" placeholder="ECJS214" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#E85E26] outline-none">
                 </div>
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Capacity</label>
-                        <input type="number" id="room-capacity" value="30" min="1" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
+                        <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Capacity</label>
+                        <input type="number" id="room-capacity" value="30" min="1" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#E85E26] outline-none">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Type</label>
-                        <select id="room-type" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
+                        <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Type</label>
+                        <select id="room-type" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#E85E26] outline-none">
                             <option value="Lecture">Lecture</option>
                             <option value="Lab">Computer Lab</option>
                             <option value="Seminar">Seminar</option>
@@ -434,20 +526,20 @@
                 </div>
                 <div class="flex justify-end space-x-3 pt-4 border-t">
                     <button type="button" onclick="closeRoomModal()" class="px-4 py-2 border border-slate-300 text-slate-600 rounded-lg text-sm font-semibold hover:bg-slate-50">Cancel</button>
-                    <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-semibold">Save Room</button>
+                    <button type="submit" class="px-4 py-2 bg-[#002D62] hover:bg-[#001D42] text-white rounded-lg text-sm font-semibold">Save Room</button>
                 </div>
             </form>
         </div>
     </div>
 
     <!-- Timeslot Modal -->
-    <div id="timeslot-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden flex justify-center items-center z-50">
-        <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
-            <h3 class="text-lg font-bold text-slate-800 mb-4">Add Custom Timeslot</h3>
+    <div id="timeslot-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex justify-center items-center z-50">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md p-6 border-t-4 border-[#E85E26]">
+            <h3 class="text-lg font-extrabold text-[#002D62] mb-4">Add Custom Timeslot</h3>
             <form onsubmit="saveTimeslot(event)" class="space-y-4">
                 <div>
-                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Day Pattern</label>
-                    <select id="ts-days" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
+                    <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Day Pattern</label>
+                    <select id="ts-days" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#E85E26] outline-none">
                         <option value="MWF">Monday Wednesday Friday (MWF)</option>
                         <option value="MF">Monday Friday (MF)</option>
                         <option value="TR">Tuesday Thursday (TR)</option>
@@ -460,17 +552,17 @@
                 </div>
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Start Time (24h)</label>
-                        <input type="time" id="ts-start" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
+                        <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Start Time (24h)</label>
+                        <input type="time" id="ts-start" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#E85E26] outline-none">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">End Time (24h)</label>
-                        <input type="time" id="ts-end" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
+                        <label class="block text-xs font-bold text-slate-600 uppercase mb-1">End Time (24h)</label>
+                        <input type="time" id="ts-end" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#E85E26] outline-none">
                     </div>
                 </div>
                 <div class="flex justify-end space-x-3 pt-4 border-t">
                     <button type="button" onclick="closeTimeslotModal()" class="px-4 py-2 border border-slate-300 text-slate-600 rounded-lg text-sm font-semibold hover:bg-slate-50">Cancel</button>
-                    <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-semibold">Save Timeslot</button>
+                    <button type="submit" class="px-4 py-2 bg-[#002D62] hover:bg-[#001D42] text-white rounded-lg text-sm font-semibold">Save Timeslot</button>
                 </div>
             </form>
         </div>
@@ -515,14 +607,14 @@
         function switchTab(tabName) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             document.querySelectorAll('.tab-btn').forEach(el => {
-                el.classList.remove('border-indigo-600', 'text-indigo-600');
+                el.classList.remove('border-[#E85E26]', 'text-[#002D62]', 'font-bold');
                 el.classList.add('border-transparent', 'text-slate-500');
             });
 
             document.getElementById(`content-${tabName}`).classList.remove('hidden');
             const activeBtn = document.getElementById(`tab-${tabName}`);
             activeBtn.classList.remove('border-transparent', 'text-slate-500');
-            activeBtn.classList.add('border-indigo-600', 'text-indigo-600');
+            activeBtn.classList.add('border-[#E85E26]', 'text-[#002D62]', 'font-bold');
 
             if (tabName === 'schedule') renderScheduleGrid();
         }
@@ -556,7 +648,8 @@
                     modality: 'GRND',
                     timeslotId: 'ts-tr-3',
                     assignedRoomId: 'r1',
-                    assignedFacultyId: 'f1'
+                    assignedFacultyId: 'f1',
+                    isModified: false
                 },
                 {
                     id: 'c2',
@@ -571,17 +664,52 @@
                     modality: 'DIST',
                     timeslotId: '',
                     assignedRoomId: '',
-                    assignedFacultyId: 'f2'
+                    assignedFacultyId: 'f2',
+                    isModified: false
+                },
+                {
+                    id: 'c3',
+                    crn: '8841',
+                    subj: 'CYB',
+                    num: '101',
+                    section: 'A',
+                    dept: 'Cybersecurity',
+                    title: 'Introduction to Cybersecurity',
+                    maxSeats: 25,
+                    credits: 3,
+                    modality: 'GRND',
+                    timeslotId: 'ts-mwf-2',
+                    assignedRoomId: 'r3',
+                    assignedFacultyId: 'f4',
+                    isModified: false
+                },
+                {
+                    id: 'c4',
+                    crn: '8842',
+                    subj: 'CYB',
+                    num: '333',
+                    section: 'Z1',
+                    dept: 'Cybersecurity',
+                    title: 'Information Assurance',
+                    maxSeats: 20,
+                    credits: 3,
+                    modality: 'DIST',
+                    timeslotId: '',
+                    assignedRoomId: '',
+                    assignedFacultyId: 'f4',
+                    isModified: false
                 }
             ];
 
+            populateMajorFilterOptions();
             renderFacultyTable();
             renderRoomTable();
-            renderCourseTable();
+            filterCourseCatalog();
             updateDashboardStats();
+            renderModifiedLog();
         }
 
-        // --- MASTER SCHEDULE SPREADSHEET PARSER (NEW) ---
+        // --- MASTER SCHEDULE SPREADSHEET PARSER ---
         function importMasterScheduleFile(e) {
             const file = e.target.files[0];
             if (!file) return;
@@ -592,11 +720,9 @@
                     const data = new Uint8Array(evt.target.result);
                     const workbook = XLSX.read(data, { type: 'array' });
                     
-                    // Look for the master sheet ('ALL 202710') or fallback to the first sheet
                     let targetSheetName = workbook.SheetNames.includes('ALL 202710') ? 'ALL 202710' : workbook.SheetNames[0];
                     let worksheet = workbook.Sheets[targetSheetName];
 
-                    // Read rows with row 1 (index 1) as headers based on your template structure
                     const json = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
                     
                     if (json.length < 2) {
@@ -604,19 +730,17 @@
                         return;
                     }
 
-                    // Find header index (row containing 'CRN' and 'Subj')
+                    // Find header row containing 'CRN' and 'Subj'
                     let headerRowIdx = 0;
-                    for (let i = 0; i < Math.min(json.length, 5); i++) {
-                        const rowStr = JSON.stringify(json[i]);
-                        if (rowStr.includes('CRN') && rowStr.includes('Subj')) {
+                    for (let i = 0; i < Math.min(json.length, 10); i++) {
+                        const rowStr = JSON.stringify(json[i] || []);
+                        if (rowStr.includes('CRN') && (rowStr.includes('Subj') || rowStr.includes('Subject'))) {
                             headerRowIdx = i;
                             break;
                         }
                     }
 
                     const headers = json[headerRowIdx];
-                    const getColIdx = (name) => headers.findIndex(h => h && h.toString().trim().toLowerCase() === name.toLowerCase());
-
                     const crnIdx = headers.findIndex(h => h && h.toString().trim() === 'CRN');
                     const deptIdx = headers.findIndex(h => h && h.toString().trim().toLowerCase() === 'dept');
                     const subjIdx = headers.findIndex(h => h && h.toString().trim().toLowerCase() === 'subj');
@@ -630,9 +754,10 @@
                     const meetBeginIdx = headers.findIndex(h => h && h.toString().trim().toLowerCase().includes('meet begin time'));
                     const meetEndIdx = headers.findIndex(h => h && h.toString().trim().toLowerCase().includes('meet end time'));
                     const meetRoomIdx = headers.findIndex(h => h && h.toString().trim().toLowerCase().includes('meet building and room'));
+                    const instructorIdx = headers.findIndex(h => h && h.toString().trim().toLowerCase().includes('instructor'));
 
                     let importedCoursesCount = 0;
-                    let detectedRooms = new Set(roomList.map(r => r.name));
+                    courseList = []; // Replace with new semester schedule
 
                     for (let i = headerRowIdx + 1; i < json.length; i++) {
                         const row = json[i];
@@ -641,7 +766,7 @@
                         const subj = subjIdx !== -1 ? String(row[subjIdx] || '').trim() : '';
                         const crseNum = crseNumIdx !== -1 ? String(row[crseNumIdx] || '').trim() : '';
                         
-                        if (!subj || !crseNum) continue; // Skip invalid rows
+                        if (!subj || !crseNum) continue;
 
                         const crn = crnIdx !== -1 ? String(row[crnIdx] || '').trim() : '';
                         const dept = deptIdx !== -1 ? String(row[deptIdx] || '').trim() : 'General';
@@ -650,53 +775,74 @@
                         const maxSeats = maxSeatsIdx !== -1 ? parseInt(row[maxSeatsIdx], 10) || 25 : 25;
                         const credits = creditsIdx !== -1 ? parseInt(row[creditsIdx], 10) || 3 : 3;
                         const modalityAttr = modalityAttrIdx !== -1 ? String(row[modalityAttrIdx] || '').trim() : 'GRND';
-                        const modality = modalityAttr.includes('DIST') || modalityAttr.includes('OL') ? 'DIST' : 'GRND';
+                        const modality = (modalityAttr.includes('DIST') || modalityAttr.includes('OL')) ? 'DIST' : 'GRND';
                         
                         const roomName = meetRoomIdx !== -1 ? String(row[meetRoomIdx] || '').trim() : '';
                         const meetDays = meetDaysIdx !== -1 ? String(row[meetDaysIdx] || '').trim() : '';
                         const meetBegin = meetBeginIdx !== -1 ? String(row[meetBeginIdx] || '').trim() : '';
                         const meetEnd = meetEndIdx !== -1 ? String(row[meetEndIdx] || '').trim() : '';
+                        const rawInstructor = instructorIdx !== -1 ? String(row[instructorIdx] || '').trim() : '';
 
-                        // Automatically add new rooms if found in the file
+                        // Instructor Parsing
+                        let assignedFacultyId = '';
+                        if (rawInstructor && rawInstructor !== '-' && rawInstructor !== ' - ') {
+                            let cleanName = rawInstructor.replace('*', '').trim();
+                            let facObj = facultyList.find(f => `${f.lastName}, ${f.firstName}`.toLowerCase() === cleanName.toLowerCase());
+                            if (!facObj) {
+                                let parts = cleanName.split(',');
+                                let lastName = parts[0] ? parts[0].trim() : cleanName;
+                                let firstName = parts[1] ? parts[1].trim() : '';
+                                const newFacId = 'f_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
+                                facObj = {
+                                    id: newFacId,
+                                    bannerId: 'P' + Math.floor(100000 + Math.random() * 900000),
+                                    firstName,
+                                    lastName,
+                                    maxCourses: 3
+                                };
+                                facultyList.push(facObj);
+                            }
+                            assignedFacultyId = facObj.id;
+                        }
+
+                        // Room Parsing
                         let assignedRoomId = '';
                         if (roomName && roomName !== 'ONLINE') {
                             let existingRoom = roomList.find(r => r.name.toLowerCase() === roomName.toLowerCase());
                             if (!existingRoom) {
                                 const newRoomId = 'r_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
-                                roomList.push({
+                                existingRoom = {
                                     id: newRoomId,
                                     name: roomName,
                                     capacity: maxSeats + 5,
                                     type: 'Lecture'
-                                });
-                                assignedRoomId = newRoomId;
-                            } else {
-                                assignedRoomId = existingRoom.id;
+                                };
+                                roomList.push(existingRoom);
                             }
+                            assignedRoomId = existingRoom.id;
                         }
 
-                        // Match timeslot if meeting days and times are provided
+                        // Timeslot Matching
                         let matchedTimeslotId = '';
-                        if (meetDays && meetBegin && meetEnd) {
+                        if (meetDays && meetBegin) {
                             let cleanBegin = convertTo24Hour(meetBegin);
                             let cleanEnd = convertTo24Hour(meetEnd);
                             let foundTs = timeslots.find(t => t.days === meetDays && t.start === cleanBegin);
                             if (foundTs) {
                                 matchedTimeslotId = foundTs.id;
-                            } else {
-                                // Add custom timeslot dynamically if not already present
+                            } else if (cleanBegin) {
                                 const newTsId = 'ts_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
                                 timeslots.push({
                                     id: newTsId,
                                     days: meetDays,
-                                    start: cleanBegin || '08:30',
+                                    start: cleanBegin,
                                     end: cleanEnd || '09:45'
                                 });
                                 matchedTimeslotId = newTsId;
                             }
                         }
 
-                        // Add course to catalog
+                        // Save Course
                         courseList.push({
                             id: 'c_' + Date.now() + '_' + importedCoursesCount,
                             crn,
@@ -710,38 +856,104 @@
                             modality,
                             timeslotId: matchedTimeslotId,
                             assignedRoomId: modality === 'DIST' ? '' : assignedRoomId,
-                            assignedFacultyId: ''
+                            assignedFacultyId,
+                            isModified: false
                         });
 
                         importedCoursesCount++;
                     }
 
-                    renderCourseTable();
+                    populateMajorFilterOptions();
+                    filterCourseCatalog();
+                    renderFacultyTable();
                     renderRoomTable();
                     renderTimeslots();
                     updateDashboardStats();
-                    alert(`Successfully imported ${importedCoursesCount} courses and updated the Course Catalog tab from the uploaded spreadsheet!`);
+                    renderModifiedLog();
+
+                    alert(`Successfully imported ${importedCoursesCount} courses from previous semester Excel spreadsheet!`);
                 } catch (err) {
                     console.error(err);
-                    alert("Error parsing spreadsheet file. Please make sure it matches the Banner Schedule Roll template format.");
+                    alert("Error parsing spreadsheet file. Please verify it matches the standard Banner export format.");
                 }
             };
             reader.readAsArrayBuffer(file);
         }
 
-        // Helper to convert 12hr time string (e.g., '2:30PM') to 24hr ('14:30') for internal timeslot tracking
+        // Helper: Convert 12hr AM/PM string to 24hr format
         function convertTo24Hour(timeStr) {
             if (!timeStr) return '';
-            let upper = timeStr.toUpperCase().trim();
+            let upper = String(timeStr).toUpperCase().trim();
             let isPM = upper.includes('PM');
             let isAM = upper.includes('AM');
             let clean = upper.replace('PM', '').replace('AM', '').trim();
             let parts = clean.split(':');
+            if (parts.length < 2) return '';
             let h = parseInt(parts[0], 10) || 0;
-            let m = parts[1] ? parseInt(parts[1], 10) || 0 : 0;
+            let m = parseInt(parts[1], 10) || 0;
             if (isPM && h < 12) h += 12;
             if (isAM && h === 12) h = 0;
             return `${h < 10 ? '0' : ''}${h}:${m < 10 ? '0' : ''}${m}`;
+        }
+
+        // Helper: Format 24hr string to 12hr Banner format
+        function formatBannerTime(timeStr) {
+            if (!timeStr) return '';
+            let cleanTime = String(timeStr).trim();
+            if (cleanTime.toUpperCase().includes('AM') || cleanTime.toUpperCase().includes('PM')) {
+                return cleanTime;
+            }
+            const parts = cleanTime.split(':');
+            if (parts.length < 2) return cleanTime;
+            let h = parseInt(parts[0], 10);
+            const m = parseInt(parts[1], 10) || 0;
+            const ampm = h >= 12 ? 'PM' : 'AM';
+            h = h % 12;
+            if (h === 0) h = 12;
+            return `${h}:${m < 10 ? '0' : ''}${m}${ampm}`;
+        }
+
+        // --- DYNAMIC MAJOR CODE FILTERING ---
+        function populateMajorFilterOptions() {
+            const select = document.getElementById('course-filter-major');
+            if (!select) return;
+
+            const currentSelection = select.value;
+            const subjects = Array.from(new Set(courseList.map(c => c.subj))).filter(Boolean).sort();
+
+            select.innerHTML = '<option value="ALL">All Majors / Subjects</option>';
+            subjects.forEach(subj => {
+                const count = courseList.filter(c => c.subj === subj).length;
+                select.innerHTML += `<option value="${subj}">${subj} (${count} courses)</option>`;
+            });
+
+            select.value = subjects.includes(currentSelection) ? currentSelection : 'ALL';
+        }
+
+        function filterCourseCatalog() {
+            const majorFilter = document.getElementById('course-filter-major').value;
+            const modalityFilter = document.getElementById('course-filter-modality').value;
+            const searchTerm = document.getElementById('course-filter-search').value.toLowerCase().trim();
+
+            const filtered = courseList.filter(c => {
+                const matchesMajor = majorFilter === 'ALL' || c.subj === majorFilter;
+                const matchesModality = modalityFilter === 'ALL' || c.modality === modalityFilter;
+                
+                const fac = facultyList.find(f => f.id === c.assignedFacultyId);
+                const facName = fac ? `${fac.firstName} ${fac.lastName}`.toLowerCase() : '';
+
+                const matchesSearch = !searchTerm || 
+                    c.title.toLowerCase().includes(searchTerm) ||
+                    c.crn.toLowerCase().includes(searchTerm) ||
+                    `${c.subj}${c.num}`.toLowerCase().includes(searchTerm) ||
+                    `${c.subj} ${c.num}`.toLowerCase().includes(searchTerm) ||
+                    facName.includes(searchTerm);
+
+                return matchesMajor && matchesModality && matchesSearch;
+            });
+
+            renderCourseTable(filtered);
+            document.getElementById('course-filter-count').innerText = `Showing ${filtered.length} of ${courseList.length} courses`;
         }
 
         // --- DASHBOARD METRICS ---
@@ -753,9 +965,41 @@
 
             document.getElementById('stat-total-faculty').innerText = facultyList.length;
             document.getElementById('stat-total-rooms').innerText = roomList.length;
+
+            const modifiedCount = courseList.filter(c => c.isModified).length;
+            document.getElementById('stat-total-modified').innerText = modifiedCount;
         }
 
-        // --- FACULTY MANAGEMENT & FILE UPLOAD ---
+        function renderModifiedLog() {
+            const container = document.getElementById('modified-log-container');
+            const modified = courseList.filter(c => c.isModified);
+
+            if (modified.length === 0) {
+                container.innerHTML = '<p class="text-xs text-slate-400 italic py-4 text-center">No modifications recorded yet. Make edits in the Course Catalog to track changes here.</p>';
+                return;
+            }
+
+            container.innerHTML = '';
+            modified.forEach(c => {
+                const fac = facultyList.find(f => f.id === c.assignedFacultyId);
+                const rm = roomList.find(r => r.id === c.assignedRoomId);
+                
+                const div = document.createElement('div');
+                div.className = 'py-2.5 flex items-center justify-between text-xs';
+                div.innerHTML = `
+                    <div class="flex items-center space-x-3">
+                        <span class="px-2 py-0.5 font-bold rounded bg-amber-100 text-[#002D62] font-mono">${c.subj} ${c.num}-${c.section}</span>
+                        <span class="font-medium text-slate-800">${c.title}</span>
+                    </div>
+                    <div class="text-slate-500 font-mono">
+                        ${fac ? fac.lastName : 'No Instructor'} | ${rm ? rm.name : (c.modality === 'DIST' ? 'ONLINE' : 'No Room')} | Max Seats: ${c.maxSeats}
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        // --- FACULTY MANAGEMENT ---
         function renderFacultyTable() {
             const tbody = document.getElementById('faculty-table-body');
             tbody.innerHTML = '';
@@ -765,20 +1009,20 @@
                 const tr = document.createElement('tr');
                 tr.className = 'hover:bg-slate-50 transition';
                 tr.innerHTML = `
-                    <td class="p-4 font-mono text-slate-600">${fac.bannerId || '-'}</td>
-                    <td class="p-4 font-medium text-slate-800">${fac.lastName}, ${fac.firstName}</td>
-                    <td class="p-4">
+                    <td class="p-3.5 font-mono text-slate-600">${fac.bannerId || '-'}</td>
+                    <td class="p-3.5 font-bold text-[#002D62]">${fac.lastName}, ${fac.firstName}</td>
+                    <td class="p-3.5">
                         <input type="number" min="1" max="10" value="${fac.maxCourses}" 
                             onchange="updateFacultyMaxCourses('${fac.id}', this.value)" 
-                            class="w-16 px-2 py-1 border border-slate-300 rounded focus:ring-2 focus:ring-indigo-500 text-sm">
+                            class="w-16 px-2 py-1 border border-slate-300 rounded focus:ring-2 focus:ring-[#E85E26] text-sm">
                     </td>
-                    <td class="p-4">
-                        <span class="px-2.5 py-1 text-xs rounded-full font-semibold ${assignedCount > fac.maxCourses ? 'bg-rose-100 text-rose-700' : 'bg-emerald-100 text-emerald-700'}">
+                    <td class="p-3.5">
+                        <span class="px-2.5 py-1 text-xs rounded-full font-bold ${assignedCount > fac.maxCourses ? 'bg-rose-100 text-rose-700' : 'bg-emerald-100 text-emerald-800'}">
                             ${assignedCount} / ${fac.maxCourses} Courses
                         </span>
                     </td>
-                    <td class="p-4 text-right space-x-2">
-                        <button onclick="editFaculty('${fac.id}')" class="text-indigo-600 hover:text-indigo-800"><i class="fa-solid fa-pen"></i></button>
+                    <td class="p-3.5 text-right space-x-2">
+                        <button onclick="editFaculty('${fac.id}')" class="text-[#002D62] hover:text-[#E85E26]"><i class="fa-solid fa-pen"></i></button>
                         <button onclick="deleteFaculty('${fac.id}')" class="text-rose-600 hover:text-rose-800"><i class="fa-solid fa-trash"></i></button>
                     </td>
                 `;
@@ -802,8 +1046,7 @@
             reader.onload = function(evt) {
                 const data = new Uint8Array(evt.target.result);
                 const workbook = XLSX.read(data, { type: 'array' });
-                const firstSheetName = workbook.SheetNames[0];
-                const worksheet = workbook.Sheets[firstSheetName];
+                const worksheet = workbook.Sheets[workbook.SheetNames[0]];
                 const json = XLSX.utils.sheet_to_json(worksheet);
 
                 let added = 0;
@@ -880,38 +1123,46 @@
                 facultyList = facultyList.filter(f => f.id !== id);
                 courseList.forEach(c => { if (c.assignedFacultyId === id) c.assignedFacultyId = ''; });
                 renderFacultyTable();
-                renderCourseTable();
+                filterCourseCatalog();
                 updateDashboardStats();
             }
         }
 
-        // --- COURSE CATALOG & MAX SEATS MANAGEMENT ---
-        function renderCourseTable() {
+        // --- COURSE CATALOG TABLE & MODAL LOGIC ---
+        function renderCourseTable(dataToRender = courseList) {
             const tbody = document.getElementById('course-table-body');
             tbody.innerHTML = '';
 
-            courseList.forEach(c => {
+            dataToRender.forEach(c => {
                 const fac = facultyList.find(f => f.id === c.assignedFacultyId);
                 const rm = roomList.find(r => r.id === c.assignedRoomId);
                 const ts = timeslots.find(t => t.id === c.timeslotId);
 
                 const tr = document.createElement('tr');
-                tr.className = 'hover:bg-slate-50 transition';
+                tr.className = `hover:bg-slate-50 transition ${c.isModified ? 'bg-amber-50/60' : ''}`;
                 tr.innerHTML = `
-                    <td class="p-4 font-mono font-semibold text-indigo-900">${c.subj} ${c.num} (${c.crn || 'N/A'})</td>
-                    <td class="p-4 font-medium text-slate-800">${c.title}</td>
-                    <td class="p-4 font-mono text-slate-600">${c.section}</td>
-                    <td class="p-4 font-bold text-slate-700">${c.maxSeats}</td>
-                    <td class="p-4">
-                        <span class="px-2 py-0.5 rounded text-xs font-semibold ${c.modality === 'GRND' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'}">
+                    <td class="p-3.5 font-mono font-bold text-[#002D62]">
+                        ${c.subj} ${c.num}
+                        <span class="block text-[10px] text-slate-400 font-normal">CRN: ${c.crn || 'N/A'}</span>
+                    </td>
+                    <td class="p-3.5 font-semibold text-slate-800">${c.title}</td>
+                    <td class="p-3.5 font-mono text-slate-600">${c.section}</td>
+                    <td class="p-3.5 font-black text-slate-700">${c.maxSeats}</td>
+                    <td class="p-3.5">
+                        <span class="px-2 py-0.5 rounded text-[11px] font-bold ${c.modality === 'GRND' ? 'bg-blue-100 text-[#002D62]' : 'bg-purple-100 text-purple-900'}">
                             ${c.modality}
                         </span>
                     </td>
-                    <td class="p-4 text-xs font-mono">${ts ? `${ts.days} ${formatBannerTime(ts.start)}-${formatBannerTime(ts.end)}` : (c.modality === 'DIST' ? 'Online' : 'Unassigned')}</td>
-                    <td class="p-4 text-xs font-semibold">${rm ? rm.name : (c.modality === 'DIST' ? 'ONLINE' : 'Unassigned')}</td>
-                    <td class="p-4 text-xs font-medium">${fac ? `${fac.lastName}, ${fac.firstName}` : '-'}</td>
-                    <td class="p-4 text-right space-x-2">
-                        <button onclick="editCourse('${c.id}')" class="text-indigo-600 hover:text-indigo-800"><i class="fa-solid fa-pen"></i></button>
+                    <td class="p-3.5 text-xs font-mono">${ts ? `${ts.days} ${formatBannerTime(ts.start)}-${formatBannerTime(ts.end)}` : (c.modality === 'DIST' ? 'Online' : 'Unassigned')}</td>
+                    <td class="p-3.5 text-xs font-bold text-slate-700">${rm ? rm.name : (c.modality === 'DIST' ? 'ONLINE' : 'Unassigned')}</td>
+                    <td class="p-3.5 text-xs font-medium">${fac ? `${fac.lastName}, ${fac.firstName}` : '-'}</td>
+                    <td class="p-3.5">
+                        ${c.isModified 
+                            ? '<span class="px-2 py-0.5 text-[10px] font-extrabold rounded bg-[#E85E26] text-white uppercase tracking-wider">Modified</span>' 
+                            : '<span class="px-2 py-0.5 text-[10px] font-bold rounded bg-slate-200 text-slate-600">Original</span>'}
+                    </td>
+                    <td class="p-3.5 text-right space-x-2">
+                        <button onclick="editCourse('${c.id}')" class="text-[#002D62] hover:text-[#E85E26]"><i class="fa-solid fa-pen"></i></button>
                         <button onclick="deleteCourse('${c.id}')" class="text-rose-600 hover:text-rose-800"><i class="fa-solid fa-trash"></i></button>
                     </td>
                 `;
@@ -957,11 +1208,11 @@
             e.preventDefault();
             const id = document.getElementById('course-id').value;
             const crn = document.getElementById('course-crn').value;
-            const subj = document.getElementById('course-subj').value.toUpperCase();
-            const num = document.getElementById('course-num').value;
-            const section = document.getElementById('course-section').value.toUpperCase();
-            const dept = document.getElementById('course-dept').value;
-            const title = document.getElementById('course-title').value;
+            const subj = document.getElementById('course-subj').value.toUpperCase().trim();
+            const num = document.getElementById('course-num').value.trim();
+            const section = document.getElementById('course-section').value.toUpperCase().trim();
+            const dept = document.getElementById('course-dept').value.trim();
+            const title = document.getElementById('course-title').value.trim();
             const maxSeats = parseInt(document.getElementById('course-max-seats').value) || 25;
             const credits = parseInt(document.getElementById('course-credits').value) || 3;
             const modality = document.getElementById('course-modality').value;
@@ -971,19 +1222,26 @@
             if (id) {
                 const crs = courseList.find(c => c.id === id);
                 if (crs) {
-                    Object.assign(crs, { crn, subj, num, section, dept, title, maxSeats, credits, modality, timeslotId, assignedFacultyId });
+                    Object.assign(crs, { 
+                        crn, subj, num, section, dept, title, maxSeats, credits, 
+                        modality, timeslotId, assignedFacultyId, 
+                        isModified: true 
+                    });
                 }
             } else {
                 courseList.push({
                     id: 'c_' + Date.now(),
                     crn, subj, num, section, dept, title, maxSeats, credits, modality, timeslotId, assignedFacultyId,
-                    assignedRoomId: modality === 'DIST' ? '' : (roomList[0] ? roomList[0].id : '')
+                    assignedRoomId: modality === 'DIST' ? '' : (roomList[0] ? roomList[0].id : ''),
+                    isModified: true 
                 });
             }
 
             closeCourseModal();
-            renderCourseTable();
+            populateMajorFilterOptions();
+            filterCourseCatalog();
             updateDashboardStats();
+            renderModifiedLog();
         }
 
         function editCourse(id) {
@@ -994,8 +1252,10 @@
         function deleteCourse(id) {
             if (confirm('Delete this course?')) {
                 courseList = courseList.filter(c => c.id !== id);
-                renderCourseTable();
+                populateMajorFilterOptions();
+                filterCourseCatalog();
                 updateDashboardStats();
+                renderModifiedLog();
             }
         }
 
@@ -1008,10 +1268,10 @@
                 const tr = document.createElement('tr');
                 tr.className = 'hover:bg-slate-50 transition';
                 tr.innerHTML = `
-                    <td class="p-4 font-bold text-slate-800">${rm.name}</td>
-                    <td class="p-4 text-slate-700">${rm.capacity} Seats</td>
-                    <td class="p-4"><span class="px-2 py-1 bg-slate-100 rounded text-xs text-slate-600 font-semibold">${rm.type}</span></td>
-                    <td class="p-4 text-right space-x-2">
+                    <td class="p-3.5 font-bold text-[#002D62]">${rm.name}</td>
+                    <td class="p-3.5 text-slate-700 font-semibold">${rm.capacity} Seats</td>
+                    <td class="p-3.5"><span class="px-2 py-1 bg-slate-100 rounded text-xs text-slate-600 font-semibold">${rm.type}</span></td>
+                    <td class="p-3.5 text-right space-x-2">
                         <button onclick="deleteRoom('${rm.id}')" class="text-rose-600 hover:text-rose-800"><i class="fa-solid fa-trash"></i></button>
                     </td>
                 `;
@@ -1046,7 +1306,7 @@
                 roomList = roomList.filter(r => r.id !== id);
                 courseList.forEach(c => { if (c.assignedRoomId === id) c.assignedRoomId = ''; });
                 renderRoomTable();
-                renderCourseTable();
+                filterCourseCatalog();
                 updateDashboardStats();
             }
         }
@@ -1063,7 +1323,7 @@
 
             timeslots.forEach(ts => {
                 const div = document.createElement('div');
-                div.className = 'flex items-center justify-between p-2 bg-slate-50 border border-slate-200 rounded text-sm font-mono';
+                div.className = 'flex items-center justify-between p-2.5 bg-slate-50 border border-slate-200 rounded text-sm font-mono';
                 div.innerHTML = `
                     <span>${formatBannerTime(ts.start)} - ${formatBannerTime(ts.end)}</span>
                     <button onclick="deleteTimeslot('${ts.id}')" class="text-rose-500 hover:text-rose-700 text-xs"><i class="fa-solid fa-xmark"></i></button>
@@ -1098,7 +1358,7 @@
             timeslots = timeslots.filter(t => t.id !== id);
             courseList.forEach(c => { if (c.timeslotId === id) c.timeslotId = ''; });
             renderTimeslots();
-            renderCourseTable();
+            filterCourseCatalog();
         }
 
         // --- AUTOMATIC SCHEDULER ALGORITHM ---
@@ -1117,19 +1377,24 @@
                     const suitableRoom = roomList.find(r => r.capacity >= course.maxSeats) || roomList[roomIndex % roomList.length];
                     course.assignedRoomId = suitableRoom.id;
                     roomIndex++;
+                    course.isModified = true;
                 }
 
                 if (!course.timeslotId && timeslots.length > 0) {
                     course.timeslotId = timeslots[assignedCount % timeslots.length].id;
                     assignedCount++;
+                    course.isModified = true;
                 }
             });
 
-            renderCourseTable();
+            filterCourseCatalog();
             renderScheduleGrid();
+            updateDashboardStats();
+            renderModifiedLog();
+
             document.getElementById('stat-schedule-status').innerText = 'Generated';
-            document.getElementById('stat-schedule-status').className = 'text-3xl font-extrabold text-emerald-600 mt-2';
-            alert('Schedule generated successfully with optimized timeslot & room assignments!');
+            document.getElementById('stat-schedule-status').className = 'text-2xl font-black text-emerald-600 mt-1';
+            alert('Auto-Scheduler complete! Updated assignments have been flagged for export.');
         }
 
         // --- SCHEDULE GRID DISPLAY ---
@@ -1144,7 +1409,7 @@
 
                 const courseText = coursesInSlot.map(c => {
                     const room = roomList.find(r => r.id === c.assignedRoomId);
-                    return `<div><strong>${c.subj} ${c.num}-${c.section}</strong> (${room ? room.name : 'No Room'})</div>`;
+                    return `<div><strong class="text-[#002D62]">${c.subj} ${c.num}-${c.section}</strong> (${room ? room.name : 'No Room'})</div>`;
                 }).join('') || '<span class="text-slate-400 italic">No Course Assigned</span>';
 
                 const instructorText = coursesInSlot.map(c => {
@@ -1153,33 +1418,104 @@
                 }).join('') || '-';
 
                 tr.innerHTML = `
-                    <td class="p-3 border font-bold text-indigo-900">${ts.days}</td>
+                    <td class="p-3 border font-extrabold text-[#002D62]">${ts.days}</td>
                     <td class="p-3 border font-mono text-xs">${formatBannerTime(ts.start)} - ${formatBannerTime(ts.end)}</td>
                     <td class="p-3 border">${courseText}</td>
-                    <td class="p-3 border text-xs">${instructorText}</td>
+                    <td class="p-3 border text-xs font-medium">${instructorText}</td>
                 `;
                 tbody.appendChild(tr);
             });
         }
 
-        // --- HELPER: 12-HOUR BANNER TIME FORMATTER ---
-        function formatBannerTime(timeStr) {
-            if (!timeStr) return '';
-            let cleanTime = timeStr.trim();
-            // If already contains AM/PM format
-            if (cleanTime.toUpperCase().includes('AM') || cleanTime.toUpperCase().includes('PM')) {
-                return cleanTime;
+        // --- EXPORT CHANGED ITEMS ONLY TO EXCEL WITH VISUAL HIGHLIGHTING ---
+        function exportModifiedExcel() {
+            const modifiedCourses = courseList.filter(c => c.isModified);
+
+            if (modifiedCourses.length === 0) {
+                alert("No changes recorded in this session yet. Make edits to courses or assign faculty/timeslots to generate modified export items.");
+                return;
             }
-            const [hStr, mStr] = cleanTime.split(':');
-            let h = parseInt(hStr, 10);
-            const m = parseInt(mStr, 10) || 0;
-            const ampm = h >= 12 ? 'PM' : 'AM';
-            h = h % 12;
-            if (h === 0) h = 12;
-            return `${h}:${m < 10 ? '0' : ''}${m}${ampm}`;
+
+            // Headers
+            const headers = [
+                "CRN", "Subject", "Course Num", "Section", "Title", 
+                "Department", "Modality", "Max Seats", "Credits", 
+                "Instructor", "Room", "Meeting Days", "Start Time", "End Time", "Change Status"
+            ];
+
+            // Build Row Data
+            const rowsData = modifiedCourses.map(c => {
+                const fac = facultyList.find(f => f.id === c.assignedFacultyId);
+                const rm = roomList.find(r => r.id === c.assignedRoomId);
+                const ts = timeslots.find(t => t.id === c.timeslotId);
+
+                return [
+                    c.crn || "TBD",
+                    c.subj,
+                    c.num,
+                    c.section,
+                    c.title,
+                    c.dept,
+                    c.modality,
+                    c.maxSeats,
+                    c.credits,
+                    fac ? `${fac.lastName}, ${fac.firstName}` : "Unassigned",
+                    rm ? rm.name : (c.modality === 'DIST' ? 'ONLINE' : "Unassigned"),
+                    (ts && c.modality !== 'DIST') ? ts.days : "",
+                    (ts && c.modality !== 'DIST') ? formatBannerTime(ts.start) : "",
+                    (ts && c.modality !== 'DIST') ? formatBannerTime(ts.end) : "",
+                    "MODIFIED"
+                ];
+            });
+
+            // Create Worksheet via SheetJS xlsx-js-style
+            const wsData = [headers, ...rowsData];
+            const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+            // Styling configuration
+            const headerStyle = {
+                fill: { fgColor: { rgb: "002D62" } }, // Utica Navy
+                font: { name: "Arial", sz: 11, bold: true, color: { rgb: "FFFFFF" } },
+                alignment: { horizontal: "center", vertical: "center" }
+            };
+
+            const modifiedRowStyle = {
+                fill: { fgColor: { rgb: "FFE6D5" } }, // Utica Light Orange Highlight
+                font: { name: "Arial", sz: 10, bold: true, color: { rgb: "8B2500" } },
+                border: {
+                    bottom: { style: "thin", color: { rgb: "E85E26" } },
+                    top: { style: "thin", color: { rgb: "E85E26" } }
+                }
+            };
+
+            // Apply Header Style
+            for (let col = 0; col < headers.length; col++) {
+                const cellRef = XLSX.utils.encode_cell({ r: 0, c: col });
+                if (ws[cellRef]) ws[cellRef].s = headerStyle;
+            }
+
+            // Apply Modified Highlight Row Style
+            for (let row = 1; row <= rowsData.length; row++) {
+                for (let col = 0; col < headers.length; col++) {
+                    const cellRef = XLSX.utils.encode_cell({ r: row, c: col });
+                    if (ws[cellRef]) ws[cellRef].s = modifiedRowStyle;
+                }
+            }
+
+            // Set Column Widths
+            ws['!cols'] = [
+                { wch: 10 }, { wch: 10 }, { wch: 12 }, { wch: 10 }, { wch: 32 },
+                { wch: 18 }, { wch: 12 }, { wch: 12 }, { wch: 10 },
+                { wch: 24 }, { wch: 16 }, { wch: 14 }, { wch: 12 }, { wch: 12 }, { wch: 16 }
+            ];
+
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Modified Items");
+
+            XLSX.writeFile(wb, "Utica_Schedule_Changes_Highlight.xlsx");
         }
 
-        // --- BANNER OUTPUT.CSV EXPORT ---
+        // --- FULL BANNER OUTPUT.CSV EXPORT ---
         function exportToBannerCSV() {
             const line1 = "SYRCRLT Schedule Roll Template,202710,Coll Codes: %,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,";
             const line2 = "School,Do Not Use - Registrars Use,CRN,Status,Dept,Subj,Crse#,Section,Instructor (Primary marked with asterisk),Part Of Term,Campus,Sched Type,Gradable,Grade Mode,Credit Hours,Course Contact Hours,Faculty Contact Hours,Overload Y/N,Overload Amount,FirstTime Online,Engage(Y/N),Writing Intensive(Y/N),Fees,Max Seats,Enrollment,Waitlist Max,Reserved Seats,Title,Program Restrictions,Majr Restrictions,Campus Restrictions,Level Restrictions,Class Restrictions,Cross Listed With,Meet Days,Meet Begin Time,Meet End Time,Meet Building and Room,Room Capacity,Section Comments,Additional Comments,Modality(Attribute),Modality(Title)";
@@ -1262,7 +1598,7 @@
             const csvContent = "data:text/csv;charset=utf-8," + encodeURIComponent(rows.join("\n"));
             const link = document.createElement("a");
             link.setAttribute("href", csvContent);
-            link.setAttribute("download", "output.csv");
+            link.setAttribute("download", "Utica_Banner_output.csv");
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
