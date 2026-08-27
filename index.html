@@ -307,55 +307,70 @@
         </section>
 
         <!-- TIMESLOTS TAB -->
-        <section id="content-timeslots" class="tab-content hidden space-y-6">
-            <div class="flex justify-between items-center">
-                <div>
-                    <h2 class="text-2xl font-black text-[#002D62]">Standard Timeslots</h2>
-                    <p class="text-xs text-slate-500">Configure default teaching blocks for MWF, MF, and TR patterns.</p>
-                </div>
-                <button onclick="openTimeslotModal()" class="bg-[#002D62] hover:bg-[#001D42] text-white font-semibold px-3 py-2 rounded-lg shadow text-xs flex items-center space-x-2 transition">
-                    <i class="fa-solid fa-plus"></i><span>Add Custom Timeslot</span>
-                </button>
+<section id="content-timeslots" class="tab-content hidden space-y-6">
+    <div class="flex justify-between items-center">
+        <div>
+            <h2 class="text-2xl font-black text-[#002D62]">Standard Timeslots</h2>
+            <p class="text-xs text-slate-500">Configure default teaching blocks for MWF, MW, MF, and TR patterns.</p>
+        </div>
+        <button onclick="openTimeslotModal()" class="bg-[#002D62] hover:bg-[#001D42] text-white font-semibold px-3 py-2 rounded-lg shadow text-xs flex items-center space-x-2 transition">
+            <i class="fa-solid fa-plus"></i><span>Add Custom Timeslot</span>
+        </button>
+    </div>
+
+    <!-- Grid updated to 4 columns on large screens -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        
+        <!-- MWF Card -->
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 border-t-4 border-t-[#002D62]">
+            <div class="flex items-center justify-between border-b pb-3 mb-4">
+                <h3 class="font-bold text-[#002D62] flex items-center space-x-2 text-sm">
+                    <i class="fa-solid fa-calendar-day text-[#E85E26]"></i>
+                    <span>Mon / Wed / Fri (MWF)</span>
+                </h3>
+                <span class="text-xs font-semibold px-2 py-0.5 bg-orange-50 text-[#E85E26] rounded">50 min</span>
             </div>
+            <div id="timeslots-mwf-list" class="space-y-2"></div>
+        </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <!-- MWF Card -->
-                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 border-t-4 border-t-[#002D62]">
-                    <div class="flex items-center justify-between border-b pb-3 mb-4">
-                        <h3 class="font-bold text-[#002D62] flex items-center space-x-2">
-                            <i class="fa-solid fa-calendar-day text-[#E85E26]"></i>
-                            <span>Monday Wednesday Friday (MWF)</span>
-                        </h3>
-                        <span class="text-xs font-semibold px-2 py-0.5 bg-orange-50 text-[#E85E26] rounded">50 min</span>
-                    </div>
-                    <div id="timeslots-mwf-list" class="space-y-2"></div>
-                </div>
-
-                <!-- MF Card -->
-                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 border-t-4 border-t-[#002D62]">
-                    <div class="flex items-center justify-between border-b pb-3 mb-4">
-                        <h3 class="font-bold text-[#002D62] flex items-center space-x-2">
-                            <i class="fa-solid fa-calendar-day text-[#E85E26]"></i>
-                            <span>Monday Friday (MF)</span>
-                        </h3>
-                        <span class="text-xs font-semibold px-2 py-0.5 bg-orange-50 text-[#E85E26] rounded">75 min</span>
-                    </div>
-                    <div id="timeslots-mf-list" class="space-y-2"></div>
-                </div>
-
-                <!-- TR Card -->
-                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 border-t-4 border-t-[#002D62]">
-                    <div class="flex items-center justify-between border-b pb-3 mb-4">
-                        <h3 class="font-bold text-[#002D62] flex items-center space-x-2">
-                            <i class="fa-solid fa-calendar-day text-[#E85E26]"></i>
-                            <span>Tuesday Thursday (TR)</span>
-                        </h3>
-                        <span class="text-xs font-semibold px-2 py-0.5 bg-orange-50 text-[#E85E26] rounded">75 min</span>
-                    </div>
-                    <div id="timeslots-tr-list" class="space-y-2"></div>
-                </div>
+        <!-- MW Card (NEW) -->
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 border-t-4 border-t-[#002D62]">
+            <div class="flex items-center justify-between border-b pb-3 mb-4">
+                <h3 class="font-bold text-[#002D62] flex items-center space-x-2 text-sm">
+                    <i class="fa-solid fa-calendar-day text-[#E85E26]"></i>
+                    <span>Mon / Wed (MW)</span>
+                </h3>
+                <span class="text-xs font-semibold px-2 py-0.5 bg-orange-50 text-[#E85E26] rounded">75 min</span>
             </div>
-        </section>
+            <div id="timeslots-mw-list" class="space-y-2"></div>
+        </div>
+
+        <!-- MF Card -->
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 border-t-4 border-t-[#002D62]">
+            <div class="flex items-center justify-between border-b pb-3 mb-4">
+                <h3 class="font-bold text-[#002D62] flex items-center space-x-2 text-sm">
+                    <i class="fa-solid fa-calendar-day text-[#E85E26]"></i>
+                    <span>Mon / Fri (MF)</span>
+                </h3>
+                <span class="text-xs font-semibold px-2 py-0.5 bg-orange-50 text-[#E85E26] rounded">75 min</span>
+            </div>
+            <div id="timeslots-mf-list" class="space-y-2"></div>
+        </div>
+
+        <!-- TR Card -->
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 border-t-4 border-t-[#002D62]">
+            <div class="flex items-center justify-between border-b pb-3 mb-4">
+                <h3 class="font-bold text-[#002D62] flex items-center space-x-2 text-sm">
+                    <i class="fa-solid fa-calendar-day text-[#E85E26]"></i>
+                    <span>Tue / Thu (TR)</span>
+                </h3>
+                <span class="text-xs font-semibold px-2 py-0.5 bg-orange-50 text-[#E85E26] rounded">75 min</span>
+            </div>
+            <div id="timeslots-tr-list" class="space-y-2"></div>
+        </div>
+
+    </div>
+</section>
 
         <!-- SCHEDULE VIEW TAB -->
         <section id="content-schedule" class="tab-content hidden space-y-6">
