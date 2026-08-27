@@ -94,7 +94,7 @@
             <!-- Metrics Overview Grid -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
                 <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 border-t-4 border-t-[#002D62]">
-                    <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Courses</div>
+                    <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Active Courses</div>
                     <div class="text-3xl font-black text-[#002D62] mt-1" id="stat-total-courses">0</div>
                     <div class="text-xs text-slate-500 mt-1" id="stat-courses-breakdown">0 On-Ground / 0 Online</div>
                 </div>
@@ -170,7 +170,7 @@
                 <div class="flex justify-between items-center mb-4">
                     <div>
                         <h3 class="font-extrabold text-[#002D62] text-lg">Modified Schedule Log</h3>
-                        <p class="text-xs text-slate-500">Items updated in this session that will be exported to your custom changes spreadsheet.</p>
+                        <p class="text-xs text-slate-500">Items updated or deleted in this session that will be exported to your custom changes spreadsheet.</p>
                     </div>
                     <button onclick="exportModifiedExcel()" class="bg-[#E85E26] hover:bg-[#d14f1d] text-white font-bold text-xs px-3 py-1.5 rounded shadow">
                         Export Highlighted Excel
@@ -690,7 +690,9 @@
                     timeslotId: 'ts-tr-3',
                     assignedRoomId: 'r1',
                     assignedFacultyId: 'f1',
-                    isModified: false
+                    isModified: false,
+                    isLoaded: true,
+                    isDeleted: false
                 },
                 {
                     id: 'c2',
@@ -706,7 +708,9 @@
                     timeslotId: '',
                     assignedRoomId: '',
                     assignedFacultyId: 'f2',
-                    isModified: false
+                    isModified: false,
+                    isLoaded: true,
+                    isDeleted: false
                 },
                 {
                     id: 'c3',
@@ -722,7 +726,9 @@
                     timeslotId: 'ts-mwf-2',
                     assignedRoomId: 'r3',
                     assignedFacultyId: 'f4',
-                    isModified: false
+                    isModified: false,
+                    isLoaded: true,
+                    isDeleted: false
                 },
                 {
                     id: 'c4',
@@ -738,7 +744,9 @@
                     timeslotId: '',
                     assignedRoomId: '',
                     assignedFacultyId: 'f4',
-                    isModified: false
+                    isModified: false,
+                    isLoaded: true,
+                    isDeleted: false
                 }
             ];
 
@@ -893,7 +901,9 @@
                             timeslotId: matchedTimeslotId,
                             assignedRoomId: modality === 'DIST' ? '' : assignedRoomId,
                             assignedFacultyId,
-                            isModified: false
+                            isModified: false,
+                            isLoaded: true,
+                            isDeleted: false
                         });
 
                         importedCoursesCount++;
@@ -963,6 +973,7 @@
                     const daysIdx = headers.findIndex(h => h.includes('meeting days') || h.includes('meet days') || h === 'days');
                     const startIdx = headers.findIndex(h => h.includes('start time') || h.includes('meet begin'));
                     const endIdx = headers.findIndex(h => h.includes('end time') || h.includes('meet end'));
+                    const changeStatusIdx = headers.findIndex(h => h.includes('change status') || h.includes('status'));
 
                     let updatedCount = 0;
                     let newAddedCount = 0;
@@ -975,6 +986,8 @@
                         const subj = subjIdx !== -1 ? String(row[subjIdx] || '').trim().toUpperCase() : '';
                         const num = numIdx !== -1 ? String(row[numIdx] || '').trim() : '';
                         const section = secIdx !== -1 ? String(row[secIdx] || '').trim().toUpperCase() : 'A';
+                        const changeStatus = changeStatusIdx !== -1 ? String(row[changeStatusIdx] || '').trim().toUpperCase() : '';
+                        const isDeletedInFile = changeStatus.includes('DELETE');
 
                         if (!subj && !num && !crn) continue;
 
@@ -1068,6 +1081,7 @@
                             if (assignedFacultyId) targetCourse.assignedFacultyId = assignedFacultyId;
                             if (assignedRoomId && modality !== 'DIST') targetCourse.assignedRoomId = assignedRoomId;
                             if (matchedTimeslotId && modality !== 'DIST') targetCourse.timeslotId = matchedTimeslotId;
+                            targetCourse.isDeleted = isDeletedInFile;
                             targetCourse.isModified = true;
                             updatedCount++;
                         } else {
@@ -1085,7 +1099,9 @@
                                 timeslotId: modality === 'DIST' ? '' : matchedTimeslotId,
                                 assignedRoomId: modality === 'DIST' ? '' : assignedRoomId,
                                 assignedFacultyId,
-                                isModified: true
+                                isModified: true,
+                                isLoaded: true,
+                                isDeleted: isDeletedInFile
                             });
                             newAddedCount++;
                         }
@@ -1145,11 +1161,12 @@
             if (!select) return;
 
             const currentSelection = select.value;
-            const subjects = Array.from(new Set(courseList.map(c => c.subj))).filter(Boolean).sort();
+            const activeCourses = courseList.filter(c => !c.isDeleted);
+            const subjects = Array.from(new Set(activeCourses.map(c => c.subj))).filter(Boolean).sort();
 
             select.innerHTML = '<option value="ALL">All Majors / Subjects</option>';
             subjects.forEach(subj => {
-                const count = courseList.filter(c => c.subj === subj).length;
+                const count = activeCourses.filter(c => c.subj === subj).length;
                 select.innerHTML += `<option value="${subj}">${subj} (${count} courses)</option>`;
             });
 
@@ -1161,7 +1178,9 @@
             const modalityFilter = document.getElementById('course-filter-modality').value;
             const searchTerm = document.getElementById('course-filter-search').value.toLowerCase().trim();
 
-            const filtered = courseList.filter(c => {
+            const activeCourses = courseList.filter(c => !c.isDeleted);
+
+            const filtered = activeCourses.filter(c => {
                 const matchesMajor = majorFilter === 'ALL' || c.subj === majorFilter;
                 const matchesModality = modalityFilter === 'ALL' || c.modality === modalityFilter;
                 
@@ -1179,13 +1198,14 @@
             });
 
             renderCourseTable(filtered);
-            document.getElementById('course-filter-count').innerText = `Showing ${filtered.length} of ${courseList.length} courses`;
+            document.getElementById('course-filter-count').innerText = `Showing ${filtered.length} of ${activeCourses.length} active courses`;
         }
 
         function updateDashboardStats() {
-            document.getElementById('stat-total-courses').innerText = courseList.length;
-            const onGround = courseList.filter(c => c.modality === 'GRND').length;
-            const dist = courseList.filter(c => c.modality === 'DIST').length;
+            const activeCourses = courseList.filter(c => !c.isDeleted);
+            document.getElementById('stat-total-courses').innerText = activeCourses.length;
+            const onGround = activeCourses.filter(c => c.modality === 'GRND').length;
+            const dist = activeCourses.filter(c => c.modality === 'DIST').length;
             document.getElementById('stat-courses-breakdown').innerText = `${onGround} On-Ground / ${dist} Online`;
 
             document.getElementById('stat-total-faculty').innerText = facultyList.length;
@@ -1210,26 +1230,58 @@
                 const rm = roomList.find(r => r.id === c.assignedRoomId);
                 
                 const div = document.createElement('div');
-                div.className = 'py-2.5 flex items-center justify-between text-xs';
-                div.innerHTML = `
-                    <div class="flex items-center space-x-3">
-                        <span class="px-2 py-0.5 font-bold rounded bg-amber-100 text-[#002D62] font-mono">${c.subj} ${c.num}-${c.section}</span>
-                        <span class="font-medium text-slate-800">${c.title}</span>
-                    </div>
-                    <div class="text-slate-500 font-mono">
-                        ${fac ? fac.lastName : 'No Instructor'} | ${rm ? rm.name : (c.modality === 'DIST' ? 'ONLINE' : 'No Room')} | Max Seats: ${c.maxSeats}
-                    </div>
-                `;
+                div.className = 'py-2.5 flex items-center justify-between text-xs border-b border-slate-100 last:border-b-0';
+
+                if (c.isDeleted) {
+                    div.innerHTML = `
+                        <div class="flex items-center space-x-3">
+                            <span class="px-2 py-0.5 text-[10px] font-black rounded bg-rose-600 text-white uppercase tracking-wider">DELETED</span>
+                            <span class="px-2 py-0.5 font-bold rounded bg-rose-100 text-rose-800 font-mono line-through">${c.subj} ${c.num}-${c.section}</span>
+                            <span class="font-medium text-slate-500 line-through">${c.title}</span>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <span class="text-slate-400 font-mono text-[11px]">CRN: ${c.crn || 'N/A'}</span>
+                            <button onclick="restoreCourse('${c.id}')" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold px-2.5 py-1 rounded transition flex items-center space-x-1 shadow-sm">
+                                <i class="fa-solid fa-rotate-left text-amber-600"></i>
+                                <span>Restore</span>
+                            </button>
+                        </div>
+                    `;
+                } else {
+                    div.innerHTML = `
+                        <div class="flex items-center space-x-3">
+                            <span class="px-2 py-0.5 text-[10px] font-extrabold rounded bg-[#E85E26] text-white uppercase tracking-wider">MODIFIED</span>
+                            <span class="px-2 py-0.5 font-bold rounded bg-amber-100 text-[#002D62] font-mono">${c.subj} ${c.num}-${c.section}</span>
+                            <span class="font-medium text-slate-800">${c.title}</span>
+                        </div>
+                        <div class="text-slate-500 font-mono">
+                            ${fac ? fac.lastName : 'No Instructor'} | ${rm ? rm.name : (c.modality === 'DIST' ? 'ONLINE' : 'No Room')} | Max Seats: ${c.maxSeats}
+                        </div>
+                    `;
+                }
                 container.appendChild(div);
             });
+        }
+
+        function restoreCourse(id) {
+            const crs = courseList.find(c => c.id === id);
+            if (crs) {
+                crs.isDeleted = false;
+                populateMajorFilterOptions();
+                filterCourseCatalog();
+                updateDashboardStats();
+                renderModifiedLog();
+            }
         }
 
         function renderFacultyTable() {
             const tbody = document.getElementById('faculty-table-body');
             tbody.innerHTML = '';
 
+            const activeCourses = courseList.filter(c => !c.isDeleted);
+
             facultyList.forEach(fac => {
-                const assignedCount = courseList.filter(c => c.assignedFacultyId === fac.id).length;
+                const assignedCount = activeCourses.filter(c => c.assignedFacultyId === fac.id).length;
                 const tr = document.createElement('tr');
                 tr.className = 'hover:bg-slate-50 transition';
                 tr.innerHTML = `
@@ -1353,7 +1405,7 @@
             }
         }
 
-        function renderCourseTable(dataToRender = courseList) {
+        function renderCourseTable(dataToRender = courseList.filter(c => !c.isDeleted)) {
             const tbody = document.getElementById('course-table-body');
             tbody.innerHTML = '';
 
@@ -1449,7 +1501,8 @@
                     Object.assign(crs, { 
                         crn, subj, num, section, dept, title, maxSeats, credits, 
                         modality, timeslotId, assignedFacultyId, 
-                        isModified: true 
+                        isModified: true,
+                        isDeleted: false
                     });
                 }
             } else {
@@ -1457,7 +1510,9 @@
                     id: 'c_' + Date.now(),
                     crn, subj, num, section, dept, title, maxSeats, credits, modality, timeslotId, assignedFacultyId,
                     assignedRoomId: modality === 'DIST' ? '' : (roomList[0] ? roomList[0].id : ''),
-                    isModified: true 
+                    isModified: true,
+                    isLoaded: false,
+                    isDeleted: false
                 });
             }
 
@@ -1474,8 +1529,12 @@
         }
 
         function deleteCourse(id) {
-            if (confirm('Delete this course?')) {
-                courseList = courseList.filter(c => c.id !== id);
+            const crs = courseList.find(c => c.id === id);
+            if (!crs) return;
+
+            if (confirm(`Are you sure you want to delete ${crs.subj} ${crs.num}-${crs.section} (${crs.title})?`)) {
+                crs.isDeleted = true;
+                crs.isModified = true;
                 populateMajorFilterOptions();
                 filterCourseCatalog();
                 updateDashboardStats();
@@ -1590,7 +1649,9 @@
             let assignedCount = 0;
             let roomIndex = 0;
 
-            courseList.forEach(course => {
+            const activeCourses = courseList.filter(c => !c.isDeleted);
+
+            activeCourses.forEach(course => {
                 if (course.modality === 'DIST') {
                     course.assignedRoomId = '';
                     course.timeslotId = '';
@@ -1625,8 +1686,10 @@
             const tbody = document.getElementById('schedule-grid-body');
             tbody.innerHTML = '';
 
+            const activeCourses = courseList.filter(c => !c.isDeleted);
+
             timeslots.forEach(ts => {
-                const coursesInSlot = courseList.filter(c => c.timeslotId === ts.id);
+                const coursesInSlot = activeCourses.filter(c => c.timeslotId === ts.id);
                 const tr = document.createElement('tr');
                 tr.className = 'hover:bg-slate-50';
 
@@ -1669,6 +1732,8 @@
                 const rm = roomList.find(r => r.id === c.assignedRoomId);
                 const ts = timeslots.find(t => t.id === c.timeslotId);
 
+                const statusLabel = c.isDeleted ? "DELETED" : "MODIFIED";
+
                 return [
                     c.crn || "TBD",
                     c.subj,
@@ -1684,7 +1749,7 @@
                     (ts && c.modality !== 'DIST') ? ts.days : "",
                     (ts && c.modality !== 'DIST') ? formatBannerTime(ts.start) : "",
                     (ts && c.modality !== 'DIST') ? formatBannerTime(ts.end) : "",
-                    "MODIFIED"
+                    statusLabel
                 ];
             });
 
@@ -1706,15 +1771,26 @@
                 }
             };
 
+            const deletedRowStyle = {
+                fill: { fgColor: { rgb: "FEE2E2" } },
+                font: { name: "Arial", sz: 10, bold: true, color: { rgb: "991B1B" } },
+                border: {
+                    bottom: { style: "thin", color: { rgb: "EF4444" } },
+                    top: { style: "thin", color: { rgb: "EF4444" } }
+                }
+            };
+
             for (let col = 0; col < headers.length; col++) {
                 const cellRef = XLSX.utils.encode_cell({ r: 0, c: col });
                 if (ws[cellRef]) ws[cellRef].s = headerStyle;
             }
 
             for (let row = 1; row <= rowsData.length; row++) {
+                const courseItem = modifiedCourses[row - 1];
+                const currentStyle = (courseItem && courseItem.isDeleted) ? deletedRowStyle : modifiedRowStyle;
                 for (let col = 0; col < headers.length; col++) {
                     const cellRef = XLSX.utils.encode_cell({ r: row, c: col });
-                    if (ws[cellRef]) ws[cellRef].s = modifiedRowStyle;
+                    if (ws[cellRef]) ws[cellRef].s = currentStyle;
                 }
             }
 
@@ -1736,7 +1812,9 @@
 
             const rows = [line1, line2];
 
-            courseList.forEach(c => {
+            const activeCourses = courseList.filter(c => !c.isDeleted);
+
+            activeCourses.forEach(c => {
                 const fac = facultyList.find(f => f.id === c.assignedFacultyId);
                 const rm = roomList.find(r => r.id === c.assignedRoomId);
                 const ts = timeslots.find(t => t.id === c.timeslotId);
